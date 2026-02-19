@@ -1,35 +1,35 @@
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{uofithesis}[2026/02/11 v0.6 University of Illinois Thesis Class]
+\ProvidesClass{uofithesis}[2026/02/11 v0.6 University of Illinois Graduate College Dissertation/Thesis Class]
 
 \LoadClass[letterpaper,12pt,oneside]{article}
-\renewcommand{\thesection}{\arabic{section}}
 
 \RequirePackage[english]{babel}
 \RequirePackage{geometry}
-\RequirePackage{lmodern}
 \RequirePackage{setspace}
 % sectsty is partially compatible with tagging, don't use \sectionrule
 \RequirePackage{sectsty}
+\RequirePackage{float}
+\RequirePackage{fontsetup}
 
 % pgfplots configuration for accessible color schemes
 \RequirePackage{etoolbox}
 \AtEndPreamble{
-  \@ifpackageloaded{pgfplots}{
-    \usepgfplotslibrary{colorbrewer}
-    % Qualitative color scheme from https://colorbrewer2.org/
-    % Color-blind friendly, adjusted for WCAG AA contrast
-    \definecolor{aa-teal}{HTML}{168362}
-    \definecolor{aa-orange}{HTML}{C05402}
-    \definecolor{aa-blue}{HTML}{716CB2}
-    \definecolor{aa-pink}{HTML}{e7298a}
-    
-    \pgfplotscreateplotcyclelist{StrictAA}{
-        {aa-teal, fill=aa-teal, draw=black},
-        {aa-orange, fill=aa-orange, draw=black},
-        {aa-blue, fill=aa-blue, draw=black},
-        {aa-pink, fill=aa-pink, draw=black}
-    }
-  }{}
+    \@ifpackageloaded{pgfplots}{
+        \usepgfplotslibrary{colorbrewer}
+        % Qualitative color scheme from https://colorbrewer2.org/
+        % Color-blind friendly, adjusted for WCAG AA contrast
+        \definecolor{aa-teal}{HTML}{168362}
+        \definecolor{aa-orange}{HTML}{C05402}
+        \definecolor{aa-blue}{HTML}{716CB2}
+        \definecolor{aa-pink}{HTML}{e7298a}
+
+        \pgfplotscreateplotcyclelist{StrictAA}{
+            {aa-teal, fill=aa-teal, draw=black},
+            {aa-orange, fill=aa-orange, draw=black},
+            {aa-blue, fill=aa-blue, draw=black},
+            {aa-pink, fill=aa-pink, draw=black}
+        }
+    }{}
 }
 
 % Styles
@@ -38,18 +38,19 @@
 \allsectionsfont{\normalfont\bfseries\fontsize{12pt}{14.4pt}\selectfont\centering}
 \AddToHook{cmd/section/before}{\clearpage}
 
-\renewcommand{\thesection}{Chapter \arabic{section}}
-\renewcommand{\thesubsection}{\arabic{section}.\arabic{subsection}}
-\renewcommand*{\l@section}{\@dottedtocline{1}{1.5em}{5em}}
-\renewcommand*{\l@subsection}{\@dottedtocline{2}{6.5em}{2.5em}}
-
-
 % Options for the title page
 \newcommand{\department}[1]{\def\@department{#1}}
 \newcommand{\concentration}[1]{\def\@concentration{#1}}
 \newcommand{\minor}[1]{\def\@minor{#1}}
 \newcommand{\degreeyear}[1]{\def\@degreeyear{#1}}
 \newcommand{\committee}[1]{\def\@committee{#1}}
+\newcommand{\earneddegree}[1]{\def\@earneddegree{#1}}
+\newcommand{\committeetitle}[1]{\def\@committeetitle{#1}}
+
+% Copyright page option
+\newif\if@copyrightpage
+\@copyrightpagefalse % Default to no copyright page
+\newcommand{\copyrightpage}{\@copyrightpagetrue}
 
 \newif\ifdissertation
 \dissertationtrue % Default to dissertation
@@ -59,7 +60,17 @@
 \def\@degreetext{Submitted in partial fulfillment of the requirements\\for the degree of}
 \def\@degreelevel{}
 
+% Make the title according to Graduate College formatting requirements
 \renewcommand{\maketitle}{%
+    \if@copyrightpage
+    \begin{titlepage}
+        \vspace*{\fill}
+        \begin{center}
+            \textcopyright\ \@degreeyear\ \@author
+        \end{center}
+        \vspace*{\fill}
+    \end{titlepage}
+    \fi
     \begin{titlepage}
         \newgeometry{margin=1in,vmargin={1.3in,1in}}
         \linespread{1.2}
@@ -86,16 +97,29 @@
                 \vfill
             }
 
+            % Set defaults based on dissertation vs thesis
             \ifdissertation
             \ifdefined\@department
-            \def\@degreelevel{ Doctor of Philosophy in \@department}
+            \gdef\@degreelevel{ Doctor of Philosophy in \@department}
             \fi
-            \def\@thesislabel{Dissertation}
+            \gdef\@thesislabel{Dissertation}
+            \gdef\@defaultcommitteetitle{Doctoral Committee:}
             \else
             \ifdefined\@department
-            \def\@degreelevel{ Master of Science in \@department}
+            \gdef\@degreelevel{ Master of Science in \@department}
             \fi
-            \def\@thesislabel{Thesis}
+            \gdef\@thesislabel{Thesis}
+            \gdef\@defaultcommitteetitle{Master's Committee:}
+            \fi
+
+            % Use custom earned degree if set, otherwise use default
+            \ifdefined\@earneddegree
+            \gdef\@degreelevel{ \@earneddegree}
+            \fi
+
+            % Use custom committee title if set, otherwise use default
+            \ifdefined\@committeetitle\else
+            \gdef\@committeetitle{\@defaultcommitteetitle}
             \fi
 
             {\@thesislabel\par}
@@ -117,7 +141,7 @@
             }%
         \end{center}%
         \begin{flushleft}
-            {\ifdissertation Doctoral Committee:\else Master's Committee:\fi\par}
+            {\@committeetitle\par}
 
             \begin{itemize}[label={}, left-margin=0.5in]
                     \setlength{\itemsep}{0pt}
@@ -133,7 +157,7 @@
 
 % Abstract environment
 \renewenvironment{abstract}{%
-    \thispagestyle{empty}
+    \thispagestyle{plain}
     \section*{Abstract}
     \vspace{12pt}
     \doublespacing
@@ -142,9 +166,19 @@
 
 % Acknowledgements environment
 \newenvironment{acknowledgements}{%
-    \thispagestyle{empty}
+    \thispagestyle{plain}
     \section*{Acknowledgements}
     \vspace{12pt}
     \doublespacing
 }{%
 }
+
+% Adjust ToC line height
+% tableofcontents adds its own spacing on top of line height, hence the 12pt line height
+\let\thesis@tableofcontents=\tableofcontents
+\def\tableofcontents{{\fontsize{12pt}{12pt}\selectfont\thesis@tableofcontents}}
+
+\renewcommand{\thesection}{Chapter \arabic{section}}
+\renewcommand{\thesubsection}{\arabic{section}.\arabic{subsection}}
+\renewcommand*{\l@section}{\@dottedtocline{1}{1.5em}{5em}}
+\renewcommand*{\l@subsection}{\@dottedtocline{2}{3em}{2.5em}}
