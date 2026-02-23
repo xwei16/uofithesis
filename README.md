@@ -1,6 +1,11 @@
-# UofI Thesis Template
+# U of I Thesis Template
 
 A LaTeX document class for University of Illinois Urbana-Champaign dissertations and theses, with special emphasis on accessibility and PDF/UA-2 compliance.
+
+> [!IMPORTANT]
+> LaTeX PDF accessibility is constantly evolving, so this template is a work in progress.
+> If you want to update the template, the [changelog](./CHANGELOG.md) will list all
+> necessary changes to your document.
 
 ## Using This Template
 
