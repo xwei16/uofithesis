@@ -3,6 +3,10 @@
 A LaTeX document class for University of Illinois Urbana-Champaign dissertations and theses, with special emphasis on accessibility and PDF/UA-2 compliance.
 
 > [!IMPORTANT]
+> This document class **is not compatible with the older `uiucthesis2021`** package,
+> as it was not possible to both keep the same macros and have an accessible document.
+
+> [!IMPORTANT]
 > LaTeX PDF accessibility is constantly evolving, so this template is a work in progress.
 > If you want to update the template, the [changelog](./CHANGELOG.md) will list all
 > necessary changes to your document.
