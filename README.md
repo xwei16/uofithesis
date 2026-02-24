@@ -4,7 +4,7 @@ A LaTeX document class for University of Illinois Urbana-Champaign dissertations
 
 > [!IMPORTANT]
 > This document class **is not compatible with the older `uiucthesis2021`** package,
-> as it was not possible to both keep the same macros and have an accessible document.
+> so it cannot be used as a direct replacement in an existing document.
 
 > [!IMPORTANT]
 > LaTeX PDF accessibility is constantly evolving, so this template is a work in progress.
