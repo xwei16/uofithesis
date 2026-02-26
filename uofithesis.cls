@@ -36,6 +36,8 @@
 
 \newgeometry{margin=1in}
 \allsectionsfont{\normalfont\bfseries\fontsize{12pt}{14.4pt}\selectfont\centering}
+\subsectionfont{\normalfont\bfseries\fontsize{12pt}{14.4pt}\selectfont\raggedright}
+\subsubsectionfont{\normalfont\bfseries\fontsize{12pt}{14.4pt}\selectfont\raggedright}
 \AddToHook{cmd/section/before}{\clearpage}
 
 % Options for the title page
@@ -180,5 +182,8 @@
 
 \renewcommand{\thesection}{Chapter \arabic{section}}
 \renewcommand{\thesubsection}{\arabic{section}.\arabic{subsection}}
+
+% Include sections and subsections in the ToC, but exclude subsubsections.
+\AtBeginDocument{\setcounter{tocdepth}{2}}
 \renewcommand*{\l@section}{\@dottedtocline{1}{1.5em}{5em}}
 \renewcommand*{\l@subsection}{\@dottedtocline{2}{3em}{2.5em}}
