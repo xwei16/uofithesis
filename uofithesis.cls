@@ -1,5 +1,5 @@
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{uofithesis}[2026/02/11 v0.6 University of Illinois Graduate College Dissertation/Thesis Class]
+\ProvidesClass{uofithesis}[2026/02/23 v1.0 University of Illinois Graduate College Dissertation/Thesis Class]
 
 \LoadClass[letterpaper,12pt,oneside]{article}
 
@@ -144,8 +144,8 @@
         \end{center}%
         \begin{flushleft}
             {\@committeetitle\par}
-
-            \begin{itemize}[label={}, left-margin=0.5in]
+            \setlength{\leftmargini}{0.5in}
+            \begin{itemize}[label={}]
                     \setlength{\itemsep}{0pt}
                     \setlength{\parskip}{0pt}
                     \setlength{\parsep}{0pt}
