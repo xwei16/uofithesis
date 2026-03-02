@@ -13,6 +13,27 @@ A LaTeX document class for University of Illinois Urbana-Champaign dissertations
 
 ## Using This Template
 
+### Overleaf
+
+You can use this template on Overleaf, in which case you don't need to worry about installing TeX Live locally.
+
+1. Download the template as a ZIP file from the GitHub page.
+2. Select *New project* -> *Upload project* on Overleaf and upload the ZIP file.
+3. Open *Settings* using the gear icon in the bottom left, click the *Compiler* tab, and select "LuaLaTeX" from the *Compiler* dropdown menu.
+4. Open `thesis.tex` and click "Recompile" to build the document.
+
+#### TeX Live Version on Overleaf
+
+Overleaf's TeX Live is not as up to date as a local installation. You will
+likely see build warnings about the tagging system, but the document should 
+still compile.
+
+Using [Overleaf Labs](https://www.overleaf.com/labs/participate) to get access
+to the Rolling Release reduces warnings. This is optional. Make sure to change
+the TeX Live version in the project settings to "Rolling Release" to use it.
+
+### Local TeX Installation
+
 We recommend cloning the repository to get started:
 
 ```bash
