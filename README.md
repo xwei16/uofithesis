@@ -390,15 +390,10 @@ The template automatically configures document metadata for accessibility:
 }
 ```
 
-PDF title and author is set via hyperref:
+PDF title is set with the `pdfusetitle` option in `hyperref`:
 
 ```latex
-\AtBeginDocument{
-    \hypersetup{
-        pdftitle={\@title},
-        pdfauthor={\@author}
-    }
-}
+\usepackage[hidelinks,pdfusetitle]{hyperref}
 ```
 
 ## Customization
