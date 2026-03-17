@@ -468,11 +468,13 @@ Use `\input{chapters/chapter1.tex}` or similar to include chapter files.
 
 ### Build Errors
 
-#### Error: "Undefined control sequence \DocumentMetadata"
-- Update to TeX Live 2025 or later
-- Older versions don't support PDF/UA-2 tagging
+#### Error: "Undefined control sequence"
+
+- Update to the most up-to-date TeX Live version. For Overleaf, see below.
+- Older versions don't support the LaTeX Tagging Project.
 
 #### Strange build errors after adding a package
+
 - Check the [Tagging Status of LaTeX Packages](https://latex3.github.io/tagging-project/tagging-status/) to ensure compatibility
 - Incompatible packages can fail for reasons not immediately obvious when used with tagging
 
@@ -480,6 +482,18 @@ Use `\input{chapters/chapter1.tex}` or similar to include chapter files.
 
 Enabling [Overleaf Labs](https://www.overleaf.com/labs/participate) to get access 
 to the Rolling Release can reduce build issues related to the tagging system.
+
+### Slow To Compile
+
+The tagging system is still new and can be slow to compile, especially with 
+large documents. To speed up compilation when working on the document:
+
+- Remove packages from thesis.tex that you're not using, for example mhchem and chemfig
+- Replace `tagging=on` with `tagging=off`. Note that this needs to be on for the final document.
+- Remove `fontsetup`, which tends to increase compilation time.
+- Enable Draft mode. In Overleaf this is in the Recompile drop-down as "Compile mode: Fast [draft]"
+- Use [/includeonly](https://en.wikibooks.org/wiki/TeX/includeonly) to only compile the chapter you're working on.
+- If you have a lot of TikZ graphics and diagrams, the Overleaf docs on [Reducing the compile time for diagrams](https://docs.overleaf.com/troubleshooting-and-support/fixing-and-preventing-compile-timeouts/reducing-the-compile-time-for-diagrams) may help.
 
 ### Known Adobe Acrobat Accessibility Issues
 

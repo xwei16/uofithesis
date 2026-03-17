@@ -3,6 +3,16 @@
 **Breaking changes** will be highlighted in each version, if there are any.
 Breaking change would mean a change is needed in the `.tex` file to accommodate the changes in the document class.
 
+## v1.3 - 2026-03-17
+
+### Breaking Changes
+
+- `fontsetup` has been moved from the document class to the template.
+  Add `\usepackage{fontsetup}` to your `.tex` file to use the same fonts as before.
+
+`fontsetup` tends to increase compilation time, so it is now optional. Include
+fonts of your choice in the `.tex` file.
+
 ## v1.2 - 2026-03-03
 
 Use the `pdfusetitle` option with `hyperref` instead of `hypersetup` for PDF metadata.

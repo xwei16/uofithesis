@@ -9,7 +9,6 @@
 % sectsty is partially compatible with tagging, don't use \sectionrule
 \RequirePackage{sectsty}
 \RequirePackage{float}
-\RequirePackage{fontsetup}
 
 % pgfplots configuration for accessible color schemes
 \RequirePackage{etoolbox}
