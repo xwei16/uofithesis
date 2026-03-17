@@ -490,7 +490,7 @@ large documents. To speed up compilation when working on the document:
 
 - Remove packages from thesis.tex that you're not using, for example mhchem and chemfig
 - Replace `tagging=on` with `tagging=off`. Note that this needs to be on for the final document.
-- Remove `fontsetup`, which tends to increase compilation time.
+- Remove `fontsetup`, which tends to increase compilation time. If using v1.2 of this template or earlier, remove it from `uofithesis.cls`.
 - Enable Draft mode. In Overleaf this is in the Recompile drop-down as "Compile mode: Fast [draft]"
 - Use [/includeonly](https://en.wikibooks.org/wiki/TeX/includeonly) to only compile the chapter you're working on.
 - If you have a lot of TikZ graphics and diagrams, the Overleaf docs on [Reducing the compile time for diagrams](https://docs.overleaf.com/troubleshooting-and-support/fixing-and-preventing-compile-timeouts/reducing-the-compile-time-for-diagrams) may help.
