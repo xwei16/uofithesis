@@ -11,8 +11,8 @@
         extra-modules={verbatim-mo},
     }
 }
-\documentclass{uofithesis}
-% \documentclass[thesis]{uofithesis} % for a thesis
+% \documentclass{uofithesis}
+\documentclass[thesis]{uofithesis} % for a thesis
 
 \usepackage{fontsetup}
 
@@ -52,9 +52,9 @@
 \raggedright
 \setlength{\parindent}{1.5em}
 
-\title{Coffee Consumption Among Graduate Students Writing Dissertations}
-\author{Alice Ascher}
-\department{Food Science and Human Nutrition}
+\title{Robustness of Neural Networks for Computer Systems}
+\author{Xinyi Wei}
+\department{Computer Science}
 
 % You can set a specific earned degree instead of Master/Doctor of Science/Philosophy
 %\earneddegree{Doctor of Education}
@@ -71,10 +71,7 @@
 %\committeetitle{Advisers:}
 
 \committee{
-\item Associate Professor Bob Barnard, Chair
-\item Assistant Professor Charlie Clarke
-\item Professor Dan Drower
-\item Professor Eve Earlsfield
+\item Assistant Professor Gagandeep Sigh
 }
 
 \begin{document}
@@ -85,18 +82,87 @@
 \maketitle
 
 \abstract{
-    This is the abstract of the thesis. It should be a concise summary of the
-    research, including the main findings and conclusions. The abstract should
-    be no more than 350 words in length.
+    % This is the abstract of the thesis. It should be a concise summary of the
+    % research, including the main findings and conclusions. The abstract should
+    % be no more than 350 words in length.
+
+    Machine-learning-based Adaptive Bitrate (ABR) controllers, such as
+    Pensieve~\cite{pensieve}, have demonstrated substantial Quality of
+    Experience (QoE) improvements over hand-crafted heuristics in video
+    streaming systems. Yet their black-box neural nature introduces two
+    intertwined problems: vulnerability to adversarial manipulation and the
+    absence of formal correctness guarantees. This thesis addresses both
+    through a three-part framework progressing from exposing vulnerabilities,
+    to certifying the environment, to formally verifying closed-loop QoE
+    properties.
+
+    We begin by demonstrating that Pensieve is highly susceptible to
+    specification-guided adversarial attacks. Using pre- and post-condition
+    specifications mined by \texttt{SpecTRA}~\cite{spec-tra}, we construct a
+    Projected Gradient Descent (PGD) attack that perturbs only the most
+    recent chunk download time by at most $10\%$. This lightweight manipulation reduces selected bitrate by $35$--$65\%$
+    and degrades single-round QoE by $30$--$40\%$ across $581$ successful
+    attacks out of $30{,}000$ test states, while remaining within
+    empirically valid network bounds.
+
+    These vulnerabilities motivate the need for formal guarantees, which
+    in turn require a trustworthy model of the environment in which the
+    controller operates. We address this by constructing a formally certified
+    neural predictor $f^{\ast}$ for the ABR environment transition function
+    $f$. Trained on real-world traces from the Puffer dataset using $19$
+    system features, our best model achieves a Clopper--Pearson certified
+    lower bound of $0.9846$ at $90\%$ confidence---at least $98.46\%$ of
+    predictions incur less than $10\%$ normalised error---closing the
+    critical gap between neural controller analysis and the environment
+    dynamics it must reason about.
+
+    Building on this certified predictor, we design an end-to-end QoE
+    verification pipeline that reasons about system behaviour across
+    multiple control rounds. Composing $f^{\ast}$ with 
+    \texttt{auto\_LiRPA}~\cite{auto-lirpa} bound propagation. A parallel
+    branch-and-bound search partitions the input perturbation set into safe
+    regions---subsets of states for which Pensieve is certified to select a
+    specific action---then propagates interval bounds through $f^{\ast}$ to
+    obtain guaranteed next-state bounds. Iterating over multiple control
+    rounds builds a hierarchical verification tree supporting formal
+    reasoning about multi-step QoE properties of the complete
+    neuro-symbolic control loop.
+
+    Together, these contributions establish a principled methodology for
+    advancing neural systems controllers from empirical evaluation to formal
+    safety certification.
+
+
 }
 
 \acknowledgements{
-    This page is optional. The text should be in either 10- or 12-point font
-    and the line spacing should be either 1.5 or double-spaced.
+    % This page is optional. The text should be in either 10- or 12-point font
+    % and the line spacing should be either 1.5 or double-spaced.
 
-    If you do not want to include an acknowledgment, delete the text of the
-    acknowledgment and the \texttt{\textbackslash acknowledgements} command
-    from your \texttt{.tex} file.
+    % If you do not want to include an acknowledgment, delete the text of the
+    % acknowledgment and the \texttt{\textbackslash acknowledgements} command
+    % from your \texttt{.tex} file.
+
+    I am deeply grateful to my advisor, Professor Gagandeep Singh, for his
+    guidance, insight, and encouragement throughout this work. His vision
+    for principled verification of neural systems shaped every part of this
+    thesis.
+
+    I thank the Siebel School of Computing and Data Science at the
+    University of Illinois Urbana-Champaign for providing an exceptional
+    research environment and the resources that made this work possible.
+
+    I thank my collaborators Wanyu Zhao, Peizhe Liu, and Gehan Jia, whose
+    contributions to earlier stages of this research provided the foundation
+    on which this thesis builds.
+
+    % Optional — if you had lab mates who gave feedback
+    I am grateful to the members of the Focal lab at UIUCfor
+    stimulating discussions and thoughtful feedback on this work.
+
+    % Optional — personal
+    Finally, I thank my family and friends for their unwavering support
+    throughout my graduate studies.
 }
 
 \tableofcontents
