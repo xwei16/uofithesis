@@ -126,8 +126,11 @@
     obtain guaranteed next-state bounds. Iterating over multiple control
     rounds builds a hierarchical verification tree supporting formal
     reasoning about multi-step QoE properties of the complete
-    neuro-symbolic control loop.
-
+    neuro-symbolic control loop. 
+    We further establish theoretical soundness guarantees for
+    the pipeline and derive a statistical compounding bound characterising
+    how environment prediction error accumulates across rounds.
+ 
     Together, these contributions establish a principled methodology for
     advancing neural systems controllers from empirical evaluation to formal
     safety certification.
@@ -145,24 +148,36 @@
 
     I am deeply grateful to my advisor, Professor Gagandeep Singh, for his
     guidance, insight, and encouragement throughout this work. His vision
-    for principled verification of neural systems shaped every part of this
-    thesis.
+    for principled verification of neural-symbolic systems shaped every part of this
+    thesis. Beyond his mentorship in research, Gagandeep has always been
+    supportive of my career development and personal well-being, fostering
+    an environment where I could grow both as a researcher and as a person.
+    His generosity with time, constructive feedback at every stage of this
+    project, and steadfast belief in my abilities have been a constant
+    source of motivation. I could not have asked for a better advisor
+    during my time at UIUC.
+
+    I am also grateful to Debangshu Banerjee, Avaljot Singh, Calvin Xu,
+    and the other members of the Formally Certified Automation and Learning
+    (FOCAL) Lab at UIUC for creating a collaborative and intellectually
+    stimulating environment. The conversations and shared experiences within
+    the group made graduate school both more productive and more enjoyable.
+
+    I am fortunate to have worked alongside exceptional collaborators
+    throughout this research. I am especially thankful to Wanyu Zhao, whose
+    insights---spanning both the big-picture direction of this work and its
+    technical details---shaped my thinking in ways that are reflected
+    throughout this thesis. I also thank Peizhe Liu and Gehan Jia, whose
+    contributions to earlier stages of this research provided the foundation
+    on which this thesis builds.
 
     I thank the Siebel School of Computing and Data Science at the
     University of Illinois Urbana-Champaign for providing an exceptional
     research environment and the resources that made this work possible.
 
-    I thank my collaborators Wanyu Zhao, Peizhe Liu, and Gehan Jia, whose
-    contributions to earlier stages of this research provided the foundation
-    on which this thesis builds.
-
-    % Optional — if you had lab mates who gave feedback
-    I am grateful to the members of the Focal lab at UIUCfor
-    stimulating discussions and thoughtful feedback on this work.
-
-    % Optional — personal
     Finally, I thank my family and friends for their unwavering support
-    throughout my graduate studies.
+    throughout my graduate studies. Their encouragement has been a source
+    of strength at every step of this journey.
 }
 
 \tableofcontents
@@ -170,7 +185,7 @@
 % Sections make up the Main Text. Always use sectioning commands to create sections,
 % subsections, etc. Do not use formatting commands to make regular text look like
 % a section heading, as this will not be tagged properly for accessibility.
-\section{Coffee Consumption Mathematics}
+\section{Introduction}
 
 Coffee extraction occurs when hot water is poured over coffee grounds, causing
 desirable compounds such as caffeine, carbohydrates, lipids, melanoidins and
