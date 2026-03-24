@@ -161,7 +161,7 @@
     \thispagestyle{plain}
     \section*{Abstract}
     \vspace{12pt}
-    \doublespacing
+    \onehalfspacing
 }{%
 }
 
@@ -170,7 +170,8 @@
     \thispagestyle{plain}
     \section*{Acknowledgements}
     \vspace{12pt}
-    \doublespacing
+    \onehalfspacing
+    % \doublespacing
 }{%
 }
 
