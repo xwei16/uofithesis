@@ -309,7 +309,7 @@
     mining, neural network verification via LiRPA and branch-and-bound
     search, and statistical certification via Clopper--Pearson intervals.
     
-    \section{Adaptive Bitrate Video Streaming}
+    \subsection{Adaptive Bitrate Video Streaming}
     \label{sec:bg-abr}
     
     Video content is delivered in discrete \emph{chunks}, each typically
@@ -317,11 +317,13 @@
     selects the quality level---and hence the file size and bandwidth
     demand---of the next chunk. The controller optimises QoE, balancing
     bitrate, rebuffering time, and quality-switch penalties:
+
     \begin{equation}
-    \qoe = \textstyle\sum R_t \;-\; \lambda_1 \sum T^{\mathrm{rebuf}}_t
+    QoE = \textstyle\sum R_t \;-\; \lambda_1 \sum T^{\mathrm{rebuf}}_t
             \;-\; \lambda_2 \sum |R_t - R_{t-1}|,
     \label{eq:qoe}
     \end{equation}
+
     where $R_t$ is the bitrate of chunk $t$, $T^{\mathrm{rebuf}}_t$ is
     any rebuffering time incurred, and $\lambda_1, \lambda_2$ are penalty
     weights. Higher bitrates improve visual quality but increase download
@@ -378,22 +380,22 @@
     over-approximations $[\underline{y}, \overline{y}]$ of the true output
     range. The \texttt{auto\_LiRPA} library~\cite{auto-lirpa}
     implements several variants: Interval Bound Propagation (IBP), which is
-    fast but loose, and CROWN~\cite{abcrown} and its optimised
+    fast but loose, and CROWN~\cite{crown} and its optimised
     variant CROWN-Opt, which are tighter but more expensive. All variants
     are \emph{sound}: the computed bounds provably contain the true output
     for all inputs in the region.
     
-    Branch-and-bound (BaB) search~\cite{bunel2018bab} improves bound
+    Branch-and-bound (BaB) search~\cite{bab} improves bound
     tightness by recursively splitting the input region along dimensions
     where the relaxation is loose, applying LiRPA to each sub-region, and
     pruning sub-regions that are already certified. In this thesis, BaB is
     used to partition the input perturbation set into \emph{safe regions}
-    in which a single \pensieve{} action is provably dominant.
+    in which a single Pensieve action is provably dominant.
     
-    \section{Statistical Certification: Clopper--Pearson Intervals}
+    \subsection{Statistical Certification: Clopper--Pearson Intervals}
     \label{sec:bg-cp}
     
-    The Clopper--Pearson method~\cite{clopper1934use} provides exact
+    The Clopper--Pearson method~\cite{clopper-pearson} provides exact
     binomial confidence intervals without parametric assumptions. Given $n$
     i.i.d.\ test samples of which $k$ satisfy a success criterion, it
     models each prediction as a Bernoulli trial with unknown success
@@ -409,8 +411,9 @@
     interval gives a conservative but rigorous guarantee on the true
     success probability. In Chapter~\ref{chap:env}, we apply this method
     with $\alpha = 0.10$ to certify the fraction of inputs for which
-    $\fstar$ predicts within $10\%$ normalised error of the true
+    $f^{\ast}$ predicts within $10\%$ normalised error of the true
     environment output.
+
 \section{Coffee Chemistry}
 
 Caffeine \ce{C8H10N4O2} is a central nervous system (CNS) stimulant of the
