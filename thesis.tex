@@ -187,107 +187,230 @@
 % a section heading, as this will not be tagged properly for accessibility.
 \section{Introduction}
 
-Coffee extraction occurs when hot water is poured over coffee grounds, causing
-desirable compounds such as caffeine, carbohydrates, lipids, melanoidins and
-acids to be extracted from the grounds.
+    Online video accounts for the dominant share of global Internet
+    traffic~\cite{cloudinary-quality}. To deliver smooth playback over volatile
+    network links, nearly all modern streaming players employ an
+    \emph{adaptive bitrate} (ABR) controller: a component that selects the
+    video quality level for each chunk based on current network conditions,
+    balancing video quality, rebuffering risk, and quality-switch penalties
+    into a single Quality of Experience (QoE) objective~\cite{pensieve}.
+    
+    For decades, ABR controllers were built from hand-crafted heuristics.
+    Rule-based algorithms such as BOLA~\cite{bola} and
+    MPC~\cite{mpc} are simple and interpretable, but leave
+    substantial QoE improvements unrealised because they cannot capture the
+    complex, nonlinear interactions among bandwidth variability, buffer
+    dynamics, and chunk sizes. Pensieve~\cite{pensieve} addresses
+    this gap with a neural network controller trained via reinforcement
+    learning (RL) to maximise QoE-related rewards directly, achieving gains
+    of $10$--$70\%$ over rule-based baselines. Other ML-based approaches,
+    such as Fugu~\cite{fugu}, combine a supervised learned throughput
+    predictor with model-predictive control to similar effect.
+    
+    This performance advantage comes with a fundamental cost. Neural
+    networks are opaque: their decision boundaries are encoded in millions
+    of floating-point parameters, making their behaviour under worst-case
+    inputs difficult to reason about or formally verify. A decade of
+    research in computer vision has shown that small, carefully crafted
+    perturbations can cause neural networks to produce confident but
+    incorrect outputs~\cite{attack}. This thesis
+    demonstrates that the same fragility afflicts neural systems
+    controllers, and then develops the formal tools needed to reason about
+    it.
 
-Extraction yield refers to the solubles dissolved during brewing. This is often
-expressed as a percentage of the coffee's mass. It is also known as solubles
-yield or simply extraction. The extraction yield percentage describes the mass
-transferred from coffee grounds to water, expressed as a percentage of the
-initial mass of the grounds. It is given by (\ref{eq:extraction_yield}).
+    \subsection{Problem Statement and Challenges}
+    
+    Extending formal analysis to neural ABR controllers raises challenges
+    that go beyond classical neural network verification. First, ABR lacks a
+    universal definition of correctness: different algorithms disagree under
+    identical conditions, and no single objective is accepted across
+    deployments. We address this by using
+    SpecTRA~\cite{spec-tra} to mine pre-/post-condition
+    specifications directly from Pensieve's training traces, grounding
+    correctness in observed behaviour. Second, Pensieve's input features
+    are physically coupled---throughput is definitionally chunk size divided
+    by download time---so perturbations must respect these dependencies to
+    remain physically realisable. Third, and most critically, Pensieve
+    operates in a \emph{closed loop}: each bitrate decision shapes the
+    future network state the controller will observe. The system evolves as
+    \begin{equation}
+    s_{t+1} = f(s_t,\, a_t), \qquad a_t = \mathrm{NN}(s_t),
+    \label{eq:closed-loop}
+    \end{equation}
+    where $\mathrm{NN}$ is the neural controller and $f$ is the \emph{environment
+    transition function}. While $\mathrm{NN}$ can be analysed with existing
+    verification tools, $f$ encodes stochastic network dynamics whose exact
+    form is unknown. Any formal guarantee about the \emph{system} requires
+    a trustworthy, bounded model of $f$---a gap that prior work on NN4Sys
+    verification has left unaddressed.
 
-\tagstructbegin{tag=Part}
-\begin{equation}\label{eq:extraction_yield}
-    Y = \frac{M_2 \cdot t}{M_1}
-\end{equation}
-\tagstructend
+    \subsection{Contributions}
+    
+    This thesis makes three contributions that together form an end-to-end
+    framework for formally reasoning about Pensieve's closed-loop QoE
+    behaviour.
+    
+    \paragraph{Adversarial vulnerability analysis~(Chapter~\ref{chap:attack}).}
+    We present the first systematic study of adversarial attacks on ML-based
+    ABR controllers. Using SpecTRA-derived specifications to constrain
+    perturbations to physically valid states, we construct a PGD attack that
+    increases the most recent download time by at most $10\%$. This
+    manipulation reduces selected bitrate by $35$--$65\%$ and degrades
+    single-round QoE by $30$--$40\%$ across $581$ successful attacks out of
+    $30{,}000$ test states, while remaining undetectable by coarse anomaly
+    monitors. These results establish a concrete threat model and motivate
+    the need for principled formal defences.
+    
+    \paragraph{Statistically certified environment model~(Chapter~\ref{chap:env}).}
+    We construct a formally bounded neural predictor $f^{\ast}$ for the
+    environment transition function $f$, trained on real-world traces from
+    the Puffer dataset~\cite{fugu}. Applying Clopper--Pearson
+    confidence intervals~\cite{clopper-pearson} to the empirical error
+    distribution, our best model achieves a certified lower bound of
+    $0.9846$ at $90\%$ confidence: at least $98.46\%$ of predictions incur
+    less than $10\%$ normalised error. This certified predictor provides the
+    trustworthy symbolic component that closed-loop verification requires.
+    
+    \paragraph{End-to-end QoE verification pipeline~(Chapter~\ref{chap:verify}).}
+    We design and implement a multi-round verification pipeline that
+    alternates between a Pensieve phase and an environment phase.
+    In the Pensieve phase, auto\_LiRPA~\cite{auto-lirpa} with
+    CROWN-Optimised bound propagation and a parallel branch-and-bound search
+    partition the input region into safe subregions---subsets for which one
+    action provably dominates all others. In the environment phase, the
+    certified predictor $f^{\ast}$ propagates interval bounds forward to
+    obtain guaranteed next-state bounds. Iterating for up to five control
+    rounds builds a hierarchical verification tree supporting formal
+    reasoning about multi-step QoE properties. We further establish
+    theoretical soundness guarantees and a statistical compounding bound
+    quantifying how prediction error accumulates across rounds.
+    
+    \subsection{Structure of This Document}
+    
+    Chapter~\ref{chap:background} provides background on ABR streaming,
+    the Pensieve architecture, SpecTRA specification mining, neural
+    network verification, and statistical certification.
+    Chapter~\ref{chap:attack} presents the adversarial attack study.
+    Chapter~\ref{chap:env} describes the certified environment model.
+    Chapter~\ref{chap:verify} presents the verification pipeline and its
+    theoretical guarantees. Chapter~\ref{chap:eval} evaluates all three
+    contributions experimentally. Chapter~\ref{chap:discussion} discusses
+    trade-offs, limitations, and practical implications.
+    Chapter~\ref{chap:related} surveys related work.
+    Chapter~\ref{chap:conclusion} concludes and outlines future directions.
 
-where $Y$ is the extraction yield expressed as a percentage, $t$ is the total
-dissolved solids expressed as a percentage of the final beverage, $M_1$ is the
-mass of the grounds in grams, and $M_2$ is the final beverage's mass in grams.
-This means that an extraction yield of 20\% can be obtained by brewing 18 grams
-of coffee, resulting a 36-gram final beverage with a $t$ of 10\%. Yield can also
-be expressed as total dissolved solids, or parts-per-million (ppm).
+\section{Background}
 
-\section{Coffee Berries}
-
-A coffee bean is a seed from the Coffea plant and the source for coffee. This
-fruit is often referred to as a coffee cherry, but unlike the cherry, which
-usually contains a single pit, it is a berry most commonly found having two
-seeds with their flat sides together.
-
-\tagstructbegin{tag=Part}
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.6\textwidth,alt={Multiple red and green coffee
-    berries clustered together on coffee tree branches}]{
-        Clumps_of_coffee_berries_growing_on_a_tree_by_Brian_Smith.jpg
-    }
-    \caption{Clumps of coffee berries growing on a tree (Photo by Brian Smith)}
-    \label{fig:coffee_berries}
-\end{figure}
-\tagstructend
-
-\subsection{Characteristics of Coffee Berries}
-
-The two most economically important varieties of coffee plants are the arabica
-and the robusta; approximately 60\% of the coffee produced worldwide is arabica
-and some 40\% is robusta.
-
-\tagstructbegin{tag=Part}
-\begin{table}[H]
-    \centering
-    \caption{Common Coffee Species Comparison}
-    \medskip
-    \label{tab:coffee_species}
-    \renewcommand{\arraystretch}{1.5}
-    \tagpdfsetup{table/header-columns={1},table/header-rows={1}}
-    \begin{tabular}{|>{\bfseries}l|l|l|}
-        \hline
-        Species & \textbf{Flavor Profile} & \textbf{Global Production} \\
-        \hline
-        Arabica & Smooth, complex, with fruit notes & 60\% \\
-        \hline
-        Robusta & Strong, bitter, earthy & 40\% \\
-        \hline
-    \end{tabular}
-\end{table}
-\tagstructend
-\pagebreak
-
-The following table summarizes key information about coffee berries:
-
-\tagstructbegin{tag=Part}
-\begin{table}[H]
-    \centering
-    \caption{Key Characteristics of Coffee Berries}
-    \medskip
-    \label{tab:coffee_characteristics}
-    \renewcommand{\arraystretch}{1.5}
-    \tagpdfsetup{table/header-columns={1}}
-    \begin{tabular}{|>{\bfseries}p{2in}|p{4in}|}
-        \hline
-        Color at Ripeness & Bright red, yellow or pink depending on variety \\
-        \hline
-        Size & Approximately 15 mm in diameter \\
-        \hline
-        Weight & 300--330 mg dry \\
-        \hline
-        Seeds per Berry & Typically 2 seeds; 10--15\% are peaberries (single seed) \\
-        \hline
-        Time to Maturity & 6--11 months depending on variety and growing conditions \\
-        \hline
-        Caffeine Content & 1.0--2.5\% by dry weight \\
-        \hline
-        Growing Conditions & Altitudes of 600--2,200 meters; temperatures of 15--24°C \\
-        \hline
-        Shelf Life (Fruit) & 2--3 weeks if left on tree after ripening \\
-        \hline
-    \end{tabular}
-\end{table}
-\tagstructend
-
+    \label{chap:background}
+    
+    This chapter reviews the technical foundations on which the three
+    contributions of this thesis rest: the ABR streaming pipeline and QoE
+    objective, the Pensieve neural controller, the SpecTRA specification
+    mining, neural network verification via LiRPA and branch-and-bound
+    search, and statistical certification via Clopper--Pearson intervals.
+    
+    \section{Adaptive Bitrate Video Streaming}
+    \label{sec:bg-abr}
+    
+    Video content is delivered in discrete \emph{chunks}, each typically
+    $2$--$4$ seconds of playback. After each download, the ABR controller
+    selects the quality level---and hence the file size and bandwidth
+    demand---of the next chunk. The controller optimises QoE, balancing
+    bitrate, rebuffering time, and quality-switch penalties:
+    \begin{equation}
+    \qoe = \textstyle\sum R_t \;-\; \lambda_1 \sum T^{\mathrm{rebuf}}_t
+            \;-\; \lambda_2 \sum |R_t - R_{t-1}|,
+    \label{eq:qoe}
+    \end{equation}
+    where $R_t$ is the bitrate of chunk $t$, $T^{\mathrm{rebuf}}_t$ is
+    any rebuffering time incurred, and $\lambda_1, \lambda_2$ are penalty
+    weights. Higher bitrates improve visual quality but increase download
+    time and rebuffering risk; frequent quality switches are perceptually
+    jarring. Rule-based controllers such as BOLA~\cite{bola} and
+    MPC~\cite{mpc} encode expert heuristics to manage this
+    trade-off, but their fixed rules cannot adapt to the full complexity of
+    real network dynamics.
+    
+    \subsection{The Pensieve Controller}
+    \label{sec:bg-pensieve}
+    
+    Pensieve~\cite{pensieve} is a neural network controller
+    trained via reinforcement learning to maximise the QoE reward
+    in~\eqref{eq:qoe}. At each decision step, the player constructs a $6
+    \times 8$ state matrix $S$ whose rows encode: (1) past throughput
+    samples, (2) past download times, (3) post-download buffer occupancy
+    levels, (4) past selected bitrates, (5) available chunk sizes at all
+    quality levels, and (6) the number of remaining chunks. This matrix is
+    flattened into a $48$-dimensional vector and fed into a two-layer fully
+    connected actor network. The network outputs a softmax distribution over
+    six discrete bitrate actions $a \in \{300, 750, 1200, 1850, 2850,
+    4300\}$~kbps. The actor is trained with a reward function $R =
+    R_{\mathrm{bitrate}} - 4.3 \cdot R_{\mathrm{rebuffer}} -
+    R_{\mathrm{switch}}$, achieving QoE improvements of $10$--$70\%$ over
+    traditional controllers. Importantly, at deployment time Pensieve
+    operates purely as a feed-forward neural network: the RL training
+    procedure is offline, and the deployed artefact is a fixed neural
+    policy amenable to standard verification tools.
+    
+    \subsection{Specification Mining with SpecTRA}
+    \label{sec:bg-spectra}
+    
+    SpecTRA~\cite{spec-tra} automatically generates
+    pre-/post-condition specifications for neural network controllers by
+    analysing their training traces. Given logged input--output pairs from
+    Pensieve's training data, SpecTRA clusters the trace into
+    operating regimes and extracts per-feature interval bounds (pre-conditions)
+    together with the associated output constraints (post-conditions). These
+    specifications serve two roles in this thesis: they constrain
+    adversarial perturbations to physically plausible states
+    (Chapter~\ref{chap:attack}), and they provide the initial perturbation
+    sets from which the verification pipeline launches
+    (Chapter~\ref{chap:verify}).
+    
+    \subsection{Neural Network Verification: LiRPA and Branch-and-Bound}
+    \label{sec:bg-lirpa}
+    
+    \emph{Linear Relaxation-based Perturbation Analysis} (LiRPA) is a
+    family of methods for computing certified bounds on neural network
+    outputs over bounded input sets. Given an input region $[\ell, u]$,
+    LiRPA methods propagate linear relaxations of each layer's activation
+    function forward or backward through the network, producing
+    over-approximations $[\underline{y}, \overline{y}]$ of the true output
+    range. The \texttt{auto\_LiRPA} library~\cite{auto-lirpa}
+    implements several variants: Interval Bound Propagation (IBP), which is
+    fast but loose, and CROWN~\cite{abcrown} and its optimised
+    variant CROWN-Opt, which are tighter but more expensive. All variants
+    are \emph{sound}: the computed bounds provably contain the true output
+    for all inputs in the region.
+    
+    Branch-and-bound (BaB) search~\cite{bunel2018bab} improves bound
+    tightness by recursively splitting the input region along dimensions
+    where the relaxation is loose, applying LiRPA to each sub-region, and
+    pruning sub-regions that are already certified. In this thesis, BaB is
+    used to partition the input perturbation set into \emph{safe regions}
+    in which a single \pensieve{} action is provably dominant.
+    
+    \section{Statistical Certification: Clopper--Pearson Intervals}
+    \label{sec:bg-cp}
+    
+    The Clopper--Pearson method~\cite{clopper1934use} provides exact
+    binomial confidence intervals without parametric assumptions. Given $n$
+    i.i.d.\ test samples of which $k$ satisfy a success criterion, it
+    models each prediction as a Bernoulli trial with unknown success
+    probability $p$ and computes:
+    \[
+    \mathrm{CI}_{1-\alpha}(p) =
+    \left[
+        \mathrm{Beta}^{-1}\!\left(\tfrac{\alpha}{2};\, k,\, n-k+1\right),\;
+        \mathrm{Beta}^{-1}\!\left(1 - \tfrac{\alpha}{2};\, k+1,\, n-k\right)
+    \right],
+    \]
+    where $\alpha$ is the significance level. The lower bound of this
+    interval gives a conservative but rigorous guarantee on the true
+    success probability. In Chapter~\ref{chap:env}, we apply this method
+    with $\alpha = 0.10$ to certify the fraction of inputs for which
+    $\fstar$ predicts within $10\%$ normalised error of the true
+    environment output.
 \section{Coffee Chemistry}
 
 Caffeine \ce{C8H10N4O2} is a central nervous system (CNS) stimulant of the
