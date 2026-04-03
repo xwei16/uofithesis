@@ -39,6 +39,8 @@
 \usepackage[hidelinks,pdfusetitle]{hyperref}
 \usepackage[backend=biber,style=ieee]{biblatex}
 \usepackage[bottom]{footmisc}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
 
 % At time of writing, chemistry packages are not compatible with accessibility
 % tagging, but there are no alternatives.
@@ -71,7 +73,7 @@
 %\committeetitle{Advisers:}
 
 \committee{
-\item Assistant Professor Gagandeep Sigh
+\item Assistant Professor Gagandeep Singh
 }
 
 \begin{document}
@@ -89,51 +91,55 @@
     Machine-learning-based Adaptive Bitrate (ABR) controllers, such as
     Pensieve~\cite{pensieve}, have demonstrated substantial Quality of
     Experience (QoE) improvements over hand-crafted heuristics in video
-    streaming systems. Yet their black-box neural nature introduces two
-    intertwined problems: vulnerability to adversarial manipulation and the
-    absence of formal correctness guarantees. This thesis addresses both
-    through a three-part framework progressing from exposing vulnerabilities,
-    to certifying the environment, to formally verifying closed-loop QoE
-    properties.
-
-    We begin by demonstrating that Pensieve is highly susceptible to
-    specification-guided adversarial attacks. Using pre- and post-condition
-    specifications mined by \texttt{SpecTRA}~\cite{spec-tra}, we construct a
-    Projected Gradient Descent (PGD) attack that perturbs only the most
-    recent chunk download time by at most $10\%$. This lightweight manipulation reduces selected bitrate by $35$--$65\%$
-    and degrades single-round QoE by $30$--$40\%$ across $581$ successful
-    attacks out of $30{,}000$ test states, while remaining within
-    empirically valid network bounds.
-
+    streaming systems.  Yet their black-box neural nature introduces two
+    intertwined problems: vulnerability to adversarial manipulation and
+    the absence of formal correctness guarantees.  This thesis addresses
+    both through a three-part framework that progresses from exposing
+    vulnerabilities, to certifying the operating environment, to formally
+    verifying closed-loop QoE properties.
+ 
+    We first show that Pensieve is highly susceptible to
+    specification-guided adversarial attacks.  Using pre- and
+    post-condition specifications mined by
+    \texttt{SpecTRA}~\cite{spec-tra}, we construct a Projected Gradient
+    Descent (PGD) attack that perturbs only the most recent chunk
+    download time by at most $10\%$.  This lightweight manipulation
+    reduces the selected bitrate by $35$--$65\%$ and degrades
+    single-round QoE by $30$--$40\%$ across $581$ successful attacks out
+    of $30{,}000$ test states, while remaining within empirically valid
+    network bounds.
+ 
     These vulnerabilities motivate the need for formal guarantees, which
     in turn require a trustworthy model of the environment in which the
-    controller operates. We address this by constructing a formally certified
-    neural predictor $f^{\ast}$ for the ABR environment transition function
-    $f$. Trained on real-world traces from the Puffer dataset using $19$
-    system features, our best model achieves a Clopper--Pearson certified
+    controller operates.  We address this by training a neural predictor
+    $f^{\ast}$ for the ABR environment transition function~$f$ on
+    real-world traces from the Puffer dataset using $19$ system features.
+    Applying Clopper--Pearson confidence
+    intervals~\cite{clopper-pearson}, our best model achieves a certified
     lower bound of $0.9846$ at $90\%$ confidence---at least $98.46\%$ of
-    predictions incur less than $10\%$ normalised error---closing the
-    critical gap between neural controller analysis and the environment
-    dynamics it must reason about.
-
+    predictions incur less than $10\%$ normalised error---filling a
+    critical gap in neural controller verification: a trustworthy model
+    of the environment dynamics.
+ 
     Building on this certified predictor, we design an end-to-end QoE
     verification pipeline that reasons about system behaviour across
-    multiple control rounds. Composing $f^{\ast}$ with 
-    \texttt{auto\_LiRPA}~\cite{auto-lirpa} bound propagation. A parallel
-    branch-and-bound search partitions the input perturbation set into safe
-    regions---subsets of states for which Pensieve is certified to select a
-    specific action---then propagates interval bounds through $f^{\ast}$ to
-    obtain guaranteed next-state bounds. Iterating over multiple control
-    rounds builds a hierarchical verification tree supporting formal
-    reasoning about multi-step QoE properties of the complete
-    neuro-symbolic control loop. 
-    We further establish theoretical soundness guarantees for
-    the pipeline and derive a statistical compounding bound characterising
-    how environment prediction error accumulates across rounds.
+    multiple control rounds.  The pipeline alternates between a
+    \emph{Pensieve phase}, in which
+    \texttt{auto\_LiRPA}~\cite{auto-lirpa} bound propagation and
+    parallel branch-and-bound search partition the input region into safe
+    subregions where a single action provably dominates, and an
+    \emph{environment phase}, in which $f^{\ast}$ propagates interval
+    bounds forward to obtain guaranteed next-state bounds.  Iterating
+    over multiple rounds builds a hierarchical verification tree
+    supporting formal reasoning about multi-step QoE properties of the
+    complete neuro-symbolic control loop.  We further establish
+    theoretical soundness guarantees and derive a statistical compounding
+    bound characterising how environment prediction error accumulates
+    across rounds.
  
     Together, these contributions establish a principled methodology for
-    advancing neural systems controllers from empirical evaluation to formal
-    safety certification.
+    advancing neural systems controllers from empirical evaluation to
+    formal safety certification.
 
 
 }
@@ -187,232 +193,846 @@
 % a section heading, as this will not be tagged properly for accessibility.
 \section{Introduction}
 
+    \label{chap:intro}
+ 
     Online video accounts for the dominant share of global Internet
-    traffic~\cite{cloudinary-quality}. To deliver smooth playback over volatile
-    network links, nearly all modern streaming players employ an
-    \emph{adaptive bitrate} (ABR) controller: a component that selects the
-    video quality level for each chunk based on current network conditions,
-    balancing video quality, rebuffering risk, and quality-switch penalties
-    into a single Quality of Experience (QoE) objective~\cite{pensieve}.
-    
+    traffic~\cite{cloudinary-quality}.  To deliver smooth playback over
+    volatile network links, nearly all modern streaming players employ an
+    \emph{adaptive bitrate} (ABR) controller: a component that selects
+    the video quality level for each chunk based on current network
+    conditions, balancing video quality, rebuffering risk, and
+    quality-switch penalties into a single Quality of Experience (QoE)
+    objective~\cite{pensieve}.
+ 
     For decades, ABR controllers were built from hand-crafted heuristics.
     Rule-based algorithms such as BOLA~\cite{bola} and
-    MPC~\cite{mpc} are simple and interpretable, but leave
-    substantial QoE improvements unrealised because they cannot capture the
-    complex, nonlinear interactions among bandwidth variability, buffer
-    dynamics, and chunk sizes. Pensieve~\cite{pensieve} addresses
+    MPC~\cite{mpc} are simple and interpretable, but they leave
+    substantial QoE improvements unrealised because they cannot capture
+    the complex, nonlinear interactions among bandwidth variability,
+    buffer dynamics, and chunk sizes.  Pensieve~\cite{pensieve} addresses
     this gap with a neural network controller trained via reinforcement
-    learning (RL) to maximise QoE-related rewards directly, achieving gains
-    of $10$--$70\%$ over rule-based baselines. Other ML-based approaches,
-    such as Fugu~\cite{fugu}, combine a supervised learned throughput
+    learning (RL) to maximise QoE-related rewards directly, achieving
+    gains of $10$--$70\%$ over rule-based baselines.  Other ML-based
+    approaches, such as Fugu~\cite{fugu}, combine a supervised throughput
     predictor with model-predictive control to similar effect.
-    
-    This performance advantage comes with a fundamental cost. Neural
-    networks are opaque: their decision boundaries are encoded in millions
-    of floating-point parameters, making their behaviour under worst-case
-    inputs difficult to reason about or formally verify. A decade of
-    research in computer vision has shown that small, carefully crafted
-    perturbations can cause neural networks to produce confident but
-    incorrect outputs~\cite{attack}. This thesis
-    demonstrates that the same fragility afflicts neural systems
-    controllers, and then develops the formal tools needed to reason about
-    it.
-
+ 
+    This performance advantage comes at a fundamental cost.  Neural
+    networks are opaque: their decision boundaries are encoded in
+    millions of floating-point parameters, making their behaviour under
+    worst-case inputs difficult to reason about or formally verify.  A
+    decade of research in computer vision has shown that small, carefully
+    crafted perturbations can cause neural networks to produce confident
+    but incorrect outputs~\cite{attack}.  This thesis demonstrates that
+    the same fragility afflicts neural systems controllers, and then
+    develops the formal tools needed to reason about it.
+ 
+ 
+    % ---- 1.1  Problem Statement and Challenges ----------------------------
     \subsection{Problem Statement and Challenges}
-    
-    Extending formal analysis to neural ABR controllers raises challenges
-    that go beyond classical neural network verification. First, ABR lacks a
-    universal definition of correctness: different algorithms disagree under
-    identical conditions, and no single objective is accepted across
-    deployments. We address this by using
-    SpecTRA~\cite{spec-tra} to mine pre-/post-condition
-    specifications directly from Pensieve's training traces, grounding
-    correctness in observed behaviour. Second, Pensieve's input features
-    are physically coupled---throughput is definitionally chunk size divided
-    by download time---so perturbations must respect these dependencies to
-    remain physically realisable. Third, and most critically, Pensieve
-    operates in a \emph{closed loop}: each bitrate decision shapes the
-    future network state the controller will observe. The system evolves as
+    \label{subsec:problem}
+ 
+    The overarching goal of this thesis is to develop a principled
+    framework for formally reasoning about the closed-loop QoE behaviour
+    of neural ABR controllers.  Achieving this goal requires overcoming
+    three challenges that go beyond classical neural network
+    verification.
+ 
+    \paragraph{Challenge~1: Absence of a correctness specification.}
+    ABR streaming lacks a universal definition of correctness: different
+    algorithms disagree under identical conditions, and no single QoE
+    objective is accepted across deployments.  We address this by using
+    SpecTRA~\cite{spec-tra} to mine pre-/post-condition specifications
+    directly from Pensieve's training traces, grounding correctness in
+    observed behaviour rather than an externally imposed standard.
+ 
+    \paragraph{Challenge~2: Physical coupling of input features.}
+    Pensieve's input features are not independent.  Throughput, for
+    example, is definitionally chunk size divided by download time.
+    Perturbations applied to one feature must respect these physical
+    dependencies to remain realisable; otherwise, adversarial analyses
+    and verification results describe states that can never arise in
+    practice.  Both our attack construction
+    (Chapter~\ref{chap:attack}) and our verification pipeline
+    (Chapter~\ref{chap:verify}) enforce such consistency constraints.
+ 
+    \paragraph{Challenge~3: Closed-loop environment dynamics.}
+    Most critically, Pensieve operates in a \emph{closed loop}: each
+    bitrate decision shapes the future network state the controller will
+    observe.  The system evolves as
     \begin{equation}
-    s_{t+1} = f(s_t,\, a_t), \qquad a_t = \mathrm{NN}(s_t),
-    \label{eq:closed-loop}
+        s_{t+1} = f(s_t,\, a_t), \qquad a_t = \mathrm{NN}(s_t),
+        \label{eq:closed-loop}
     \end{equation}
-    where $\mathrm{NN}$ is the neural controller and $f$ is the \emph{environment
-    transition function}. While $\mathrm{NN}$ can be analysed with existing
-    verification tools, $f$ encodes stochastic network dynamics whose exact
-    form is unknown. Any formal guarantee about the \emph{system} requires
-    a trustworthy, bounded model of $f$---a gap that prior work on NN4Sys
-    verification has left unaddressed.
-
+    where $\mathrm{NN}$ is the neural controller and $f$ is the
+    \emph{environment transition function}.  While $\mathrm{NN}$ can be
+    analysed with existing verification tools, $f$ encodes stochastic
+    network dynamics whose exact form is unknown.  Any formal guarantee
+    about the \emph{system}---rather than the controller in
+    isolation---requires a trustworthy, bounded model of $f$, a gap that
+    prior work on neural-network-based systems (NN4Sys) verification has
+    left unaddressed.
+ 
+ 
+    % ---- 1.2  Contributions -----------------------------------------------
     \subsection{Contributions}
-    
-    This thesis makes three contributions that together form an end-to-end
-    framework for formally reasoning about Pensieve's closed-loop QoE
-    behaviour.
-    
-    \paragraph{Adversarial vulnerability analysis~(Chapter~\ref{chap:attack}).}
-    We present the first systematic study of adversarial attacks on ML-based
-    ABR controllers. Using SpecTRA-derived specifications to constrain
-    perturbations to physically valid states, we construct a PGD attack that
-    increases the most recent download time by at most $10\%$. This
-    manipulation reduces selected bitrate by $35$--$65\%$ and degrades
-    single-round QoE by $30$--$40\%$ across $581$ successful attacks out of
-    $30{,}000$ test states, while remaining undetectable by coarse anomaly
-    monitors. These results establish a concrete threat model and motivate
-    the need for principled formal defences.
-    
-    \paragraph{Statistically certified environment model~(Chapter~\ref{chap:env}).}
+    \label{subsec:contributions}
+ 
+    This thesis makes three contributions that together form an
+    end-to-end framework for formally reasoning about Pensieve's
+    closed-loop QoE behaviour.
+ 
+    \paragraph{Adversarial vulnerability analysis
+               (Chapter~\ref{chap:attack}).}
+    We present the first systematic study of adversarial attacks on
+    ML-based ABR controllers.  Using SpecTRA-derived specifications to
+    constrain perturbations to physically valid states, we construct a
+    PGD attack that increases the most recent download time by at most
+    $10\%$.  Across $30{,}000$ test states, the attack finds $581$
+    successful adversarial examples that reduce the selected bitrate by
+    $35$--$65\%$ and degrade single-round QoE by $30$--$40\%$, while
+    remaining within empirically valid network bounds and undetectable by
+    coarse anomaly monitors.  These results establish a concrete threat
+    model and motivate the need for principled formal defences.
+ 
+    \paragraph{Statistically certified environment model
+               (Chapter~\ref{chap:env}).}
     We construct a formally bounded neural predictor $f^{\ast}$ for the
-    environment transition function $f$, trained on real-world traces from
-    the Puffer dataset~\cite{fugu}. Applying Clopper--Pearson
+    environment transition function~$f$, trained on real-world traces
+    from the Puffer dataset~\cite{fugu}.  Applying Clopper--Pearson
     confidence intervals~\cite{clopper-pearson} to the empirical error
     distribution, our best model achieves a certified lower bound of
-    $0.9846$ at $90\%$ confidence: at least $98.46\%$ of predictions incur
-    less than $10\%$ normalised error. This certified predictor provides the
-    trustworthy symbolic component that closed-loop verification requires.
-    
-    \paragraph{End-to-end QoE verification pipeline~(Chapter~\ref{chap:verify}).}
+    $0.9846$ at $90\%$ confidence: at least $98.46\%$ of predictions
+    incur less than $10\%$ normalised error.  This certified predictor
+    fills the missing symbolic component that closed-loop verification
+    requires, bridging the gap between neural controller analysis and
+    the real-world environment dynamics it must account for.
+ 
+    \paragraph{End-to-end QoE verification pipeline
+               (Chapter~\ref{chap:verify}).}
     We design and implement a multi-round verification pipeline that
-    alternates between a Pensieve phase and an environment phase.
-    In the Pensieve phase, auto\_LiRPA~\cite{auto-lirpa} with
-    CROWN-Optimised bound propagation and a parallel branch-and-bound search
-    partition the input region into safe subregions---subsets for which one
-    action provably dominates all others. In the environment phase, the
-    certified predictor $f^{\ast}$ propagates interval bounds forward to
-    obtain guaranteed next-state bounds. Iterating for up to five control
-    rounds builds a hierarchical verification tree supporting formal
-    reasoning about multi-step QoE properties. We further establish
-    theoretical soundness guarantees and a statistical compounding bound
-    quantifying how prediction error accumulates across rounds.
-    
-    \subsection{Structure of This Document}
-    
-    Chapter~\ref{chap:background} provides background on ABR streaming,
-    the Pensieve architecture, SpecTRA specification mining, neural
-    network verification, and statistical certification.
+    alternates between two phases.  In the \emph{Pensieve phase},
+    \texttt{auto\_LiRPA}~\cite{auto-lirpa} with CROWN-Optimised bound
+    propagation and a parallel branch-and-bound search partition the
+    input region into \emph{safe subregions}---subsets of the state space
+    for which one action provably dominates all others.  In the
+    \emph{environment phase}, the certified predictor $f^{\ast}$
+    propagates interval bounds forward to obtain guaranteed next-state
+    bounds.  Iterating for up to five control rounds builds a
+    hierarchical verification tree supporting formal reasoning about
+    multi-step QoE properties of the complete neuro-symbolic control
+    loop.  We further establish theoretical soundness guarantees and a
+    statistical compounding bound quantifying how prediction error
+    accumulates across rounds.
+ 
+ 
+    % ---- 1.3  Structure ---------------------------------------------------
+    \subsection{Thesis Structure}
+    \label{subsec:structure}
+ 
+    The remainder of this thesis is organised as follows.
+    %
+    Chapter~\ref{chap:background} provides technical background on ABR
+    streaming, the Pensieve architecture, adversarial robustness, SpecTRA
+    specification mining, environment modelling, neural network
+    verification, and statistical certification.
+    %
     Chapter~\ref{chap:attack} presents the adversarial attack study.
+    %
     Chapter~\ref{chap:env} describes the certified environment model.
-    Chapter~\ref{chap:verify} presents the verification pipeline and its
-    theoretical guarantees. Chapter~\ref{chap:eval} evaluates all three
-    contributions experimentally. Chapter~\ref{chap:discussion} discusses
-    trade-offs, limitations, and practical implications.
+    %
+    Chapter~\ref{chap:verify} presents the end-to-end verification
+    pipeline and its theoretical guarantees.
+    %
+    Chapter~\ref{chap:eval} evaluates all three contributions
+    experimentally.
+    %
+    Chapter~\ref{chap:discussion} discusses trade-offs, limitations, and
+    practical implications.
+    %
     Chapter~\ref{chap:related} surveys related work.
-    Chapter~\ref{chap:conclusion} concludes and outlines future directions.
+    %
+    Chapter~\ref{chap:conclusion} concludes and outlines future
+    directions.
 
 \section{Background}
-
     \label{chap:background}
     
-    This chapter reviews the technical foundations on which the three
-    contributions of this thesis rest: the ABR streaming pipeline and QoE
-    objective, the Pensieve neural controller, the SpecTRA specification
-    mining, neural network verification via LiRPA and branch-and-bound
-    search, and statistical certification via Clopper--Pearson intervals.
+    This chapter reviews the technical foundations on which this thesis
+    builds.
+    Section~\ref{subsec:streaming} introduces ABR streaming and the
+    Pensieve neural controller.
+    Section~\ref{sec:bg-spectra} describes the SpecTRA
+    specification-mining framework.
+    Section~\ref{sec:bg-lirpa} covers neural network verification via
+    LiRPA.
+    Section~\ref{sec:bg-cp} reviews the Clopper--Pearson method for
+    statistical certification.
     
-    \subsection{Adaptive Bitrate Video Streaming}
-    \label{sec:bg-abr}
     
+    % ---------------------------------------------------------------------------
+    \subsection{Video Streaming and the Pensieve Controller}
+    \label{subsec:streaming}
+    
+    Online video has become the dominant load on the public Internet,
+    accounting for more than 82\% of consumer IP traffic according to
+    Cisco's Visual Networking Index~\cite{cloudinary-quality}.
+    To keep playback smooth over volatile links, nearly all modern streaming
+    players employ an ABR controller.
     Video content is delivered in discrete \emph{chunks}, each typically
-    $2$--$4$ seconds of playback. After each download, the ABR controller
-    selects the quality level---and hence the file size and bandwidth
-    demand---of the next chunk. The controller optimises QoE, balancing
-    bitrate, rebuffering time, and quality-switch penalties:
-
+    $2$--$4$~seconds of playback.
+    After downloading each chunk, the client uses recent network
+    metrics---throughput and buffer occupancy, among others---to select the
+    quality level of the next chunk.
+    
+    Conventional ABR schemes such as \emph{BOLA}~\cite{bola} and
+    \emph{MPC}~\cite{mpc} encode expert-designed rules; for example,
+    ``maintain at least $B$~seconds of buffered video, then select the
+    highest bitrate whose predicted download time is less than $B - C$,''
+    where $B$ and $C$ are hand-tuned constants.
+    While these heuristics perform reasonably under typical conditions, they
+    struggle to capture the complex, nonlinear relationships among bandwidth
+    variability, buffer dynamics, and chunk size.
+    
+    The primary objective of an ABR controller is to maximise QoE, which
+    balances three factors: video quality (higher bitrates improve visual
+    fidelity but increase download time and rebuffering risk), rebuffering
+    (playback stalls severely degrade user experience), and quality switches
+    (frequent bitrate changes are perceptually jarring).
+    A standard QoE metric combines these factors as
     \begin{equation}
-    QoE = \textstyle\sum R_t \;-\; \lambda_1 \sum T^{\mathrm{rebuf}}_t
-            \;-\; \lambda_2 \sum |R_t - R_{t-1}|,
-    \label{eq:qoe}
+        \text{QoE}
+            = \sum_t \text{bitrate}_t
+            - \lambda_1 \cdot \sum_t \text{rebuffer time}_t
+            - \lambda_2 \cdot \sum_t \lvert\Delta\text{bitrate}_t\rvert,
+        \label{eq:qoe}
     \end{equation}
-
-    where $R_t$ is the bitrate of chunk $t$, $T^{\mathrm{rebuf}}_t$ is
-    any rebuffering time incurred, and $\lambda_1, \lambda_2$ are penalty
-    weights. Higher bitrates improve visual quality but increase download
-    time and rebuffering risk; frequent quality switches are perceptually
-    jarring. Rule-based controllers such as BOLA~\cite{bola} and
-    MPC~\cite{mpc} encode expert heuristics to manage this
-    trade-off, but their fixed rules cannot adapt to the full complexity of
-    real network dynamics.
+    where $\lambda_1$ and $\lambda_2$ are penalty weights that encode
+    deployment-specific preferences.
     
-    \subsection{The Pensieve Controller}
-    \label{sec:bg-pensieve}
+    \paragraph{Pensieve.}
+    Pensieve~\cite{pensieve} replaces hand-crafted heuristics with a neural
+    policy trained via RL.
+    At each decision point the player constructs a $6 \times 8$ state matrix
+    $\mathbf{S}$ whose rows capture:
+    (i)~past throughput samples,
+    (ii)~past download times,
+    (iii)~past buffer occupancy levels,
+    (iv)~past selected bitrates,
+    (v)~available chunk sizes at all quality levels, and
+    (vi)~the number of chunks remaining until video end.
+    Flattening this matrix yields a $48$-dimensional state vector that is
+    fed into a two-layer fully connected neural network.
+    The network outputs a softmax distribution over six discrete bitrate
+    actions $a \in \{300,\, 750,\, 1200,\, 1850,\, 2850,\, 4300\}$~kbps.
     
-    Pensieve~\cite{pensieve} is a neural network controller
-    trained via reinforcement learning to maximise the QoE reward
-    in~\eqref{eq:qoe}. At each decision step, the player constructs a $6
-    \times 8$ state matrix $S$ whose rows encode: (1) past throughput
-    samples, (2) past download times, (3) post-download buffer occupancy
-    levels, (4) past selected bitrates, (5) available chunk sizes at all
-    quality levels, and (6) the number of remaining chunks. This matrix is
-    flattened into a $48$-dimensional vector and fed into a two-layer fully
-    connected actor network. The network outputs a softmax distribution over
-    six discrete bitrate actions $a \in \{300, 750, 1200, 1850, 2850,
-    4300\}$~kbps. The actor is trained with a reward function $R =
-    R_{\mathrm{bitrate}} - 4.3 \cdot R_{\mathrm{rebuffer}} -
-    R_{\mathrm{switch}}$, achieving QoE improvements of $10$--$70\%$ over
-    traditional controllers. Importantly, at deployment time Pensieve
-    operates purely as a feed-forward neural network: the RL training
-    procedure is offline, and the deployed artefact is a fixed neural
-    policy amenable to standard verification tools.
+    The model is trained to maximise a QoE-based reward
+    \begin{equation}
+        R = R_{\text{bitrate}}
+            - 4.3 \cdot R_{\text{rebuffer}}
+            - R_{\text{switch}},
+        \label{eq:pensieve-reward}
+    \end{equation}
+    where $R_{\text{bitrate}}$ is the cumulative bitrate utility over recent
+    chunks, $R_{\text{rebuffer}}$ is the total rebuffering time in seconds,
+    and $R_{\text{switch}}$ is the sum of absolute differences between
+    consecutive chunk bitrates.
+    In empirical evaluations, Pensieve achieves QoE gains of $10$--$70\%$
+    over traditional controllers~\cite{pensieve}, motivating widespread
+    interest in ML-based ABR approaches.
     
+    Crucially, Pensieve operates in a \emph{closed loop}: each selected
+    action $a_t$ influences the next state $s_{t+1}$ through an environment
+    transition function~$f$ (Equation~\ref{eq:closed-loop}).
+    This closed-loop coupling means that any formal analysis of Pensieve
+    must account not only for the neural controller itself but also for the
+    dynamics of the environment in which it operates.
+    
+    
+    % ---------------------------------------------------------------------------
     \subsection{Specification Mining with SpecTRA}
     \label{sec:bg-spectra}
     
-    SpecTRA~\cite{spec-tra} automatically generates
-    pre-/post-condition specifications for neural network controllers by
-    analysing their training traces. Given logged input--output pairs from
-    Pensieve's training data, SpecTRA clusters the trace into
-    operating regimes and extracts per-feature interval bounds (pre-conditions)
-    together with the associated output constraints (post-conditions). These
-    specifications serve two roles in this thesis: they constrain
+    As noted in Section~\ref{subsec:problem}, ABR streaming lacks a
+    universal correctness criterion.
+    SpecTRA~\cite{spec-tra} fills this gap by mining
+    \emph{pre-/post-condition specifications} directly from the controller's
+    training traces.  Given logged input--output pairs from Pensieve,
+    SpecTRA clusters the state space into operating regimes, extracts
+    per-feature interval bounds $[\ell_j, u_j]$ as pre-conditions for each
+    cluster, and summarises the dominant action $a^{\ast}$ as the
+    post-condition.  A specification is thus a triple
+    $(\text{cluster id},\; [\ell, u],\; a^{\ast})$: within the state
+    region $[\ell, u]$, Pensieve is expected to select~$a^{\ast}$.
+    
+    These specifications serve two roles in this thesis: they constrain
     adversarial perturbations to physically plausible states
-    (Chapter~\ref{chap:attack}), and they provide the initial perturbation
-    sets from which the verification pipeline launches
+    (Chapter~\ref{chap:attack}), and they provide the initial input
+    regions for the verification pipeline
     (Chapter~\ref{chap:verify}).
     
-    \subsection{Neural Network Verification: LiRPA and Branch-and-Bound}
+    
+    % ---------------------------------------------------------------------------
+    \subsection{Neural Network Verification with LiRPA}
     \label{sec:bg-lirpa}
     
     \emph{Linear Relaxation-based Perturbation Analysis} (LiRPA) is a
-    family of methods for computing certified bounds on neural network
-    outputs over bounded input sets. Given an input region $[\ell, u]$,
-    LiRPA methods propagate linear relaxations of each layer's activation
-    function forward or backward through the network, producing
-    over-approximations $[\underline{y}, \overline{y}]$ of the true output
-    range. The \texttt{auto\_LiRPA} library~\cite{auto-lirpa}
-    implements several variants: Interval Bound Propagation (IBP), which is
-    fast but loose, and CROWN~\cite{crown} and its optimised
-    variant CROWN-Opt, which are tighter but more expensive. All variants
-    are \emph{sound}: the computed bounds provably contain the true output
-    for all inputs in the region.
+    family of methods for computing certified output bounds of neural
+    networks over bounded input sets.
+    Given an input region $[\ell, u] \subseteq \mathbb{R}^d$, LiRPA
+    propagates linear relaxations of each layer's activation function
+    through the network, producing sound over-approximations
+    $[\underline{y},\, \overline{y}]$ of the true output range---that is,
+    for every $x \in [\ell, u]$, the network output satisfies
+    $\underline{y} \leq g(x) \leq \overline{y}$.
     
-    Branch-and-bound (BaB) search~\cite{bab} improves bound
-    tightness by recursively splitting the input region along dimensions
-    where the relaxation is loose, applying LiRPA to each sub-region, and
-    pruning sub-regions that are already certified. In this thesis, BaB is
-    used to partition the input perturbation set into \emph{safe regions}
-    in which a single Pensieve action is provably dominant.
+    The \texttt{auto\_LiRPA} library~\cite{auto-lirpa} implements several
+    propagation strategies with different cost--tightness trade-offs:
     
+    \paragraph{Interval Bound Propagation (IBP)}
+    propagates axis-aligned interval bounds layer by layer.
+    IBP is fast ($O(1)$ per neuron) but introduces substantial
+    over-approximation at each non-linear activation, causing bounds to
+    grow rapidly with network depth.
+    
+    \paragraph{CROWN~\cite{crown}}
+    computes linear upper and lower bounding functions for each neuron by
+    back-propagating affine relaxations from the output to the input layer.
+    CROWN bounds are significantly tighter than IBP but require a backward
+    pass for each output dimension.
+    
+    \paragraph{CROWN-Optimised (CROWN-Opt)}
+    extends CROWN by treating the relaxation slopes of unstable ReLU neurons
+    as learnable parameters optimised via gradient descent.
+    This produces the tightest bounds among the three methods at the cost of
+    multiple optimisation iterations.
+    
+    All three methods are \emph{sound}: the computed bounds provably contain
+    the true output for every input in the region.
+    In this thesis, LiRPA is the core bound-computation engine used in both
+    the Pensieve verification phase and the environment verification phase
+    of the pipeline described in Chapter~\ref{chap:verify}.
+    
+    
+    % ---------------------------------------------------------------------------
     \subsection{Statistical Certification: Clopper--Pearson Intervals}
     \label{sec:bg-cp}
     
+    The verification tools described in Section~\ref{sec:bg-lirpa} provide
+    \emph{deterministic} soundness guarantees for neural network outputs.
+    However, they require that every component in the pipeline be a
+    differentiable neural network with known architecture and weights.
+    The environment transition function $f$ does not satisfy this
+    requirement: even though our neural approximation $f^{\ast}$ can be
+    analysed via LiRPA, there is an irreducible gap between $f^{\ast}$ and
+    the true dynamics~$f$.
+    To quantify this gap rigorously, we turn to \emph{statistical
+    certification}.
+    
     The Clopper--Pearson method~\cite{clopper-pearson} provides exact
-    binomial confidence intervals without parametric assumptions. Given $n$
-    i.i.d.\ test samples of which $k$ satisfy a success criterion, it
-    models each prediction as a Bernoulli trial with unknown success
-    probability $p$ and computes:
-    \[
-    \mathrm{CI}_{1-\alpha}(p) =
-    \left[
-        \mathrm{Beta}^{-1}\!\left(\tfrac{\alpha}{2};\, k,\, n-k+1\right),\;
-        \mathrm{Beta}^{-1}\!\left(1 - \tfrac{\alpha}{2};\, k+1,\, n-k\right)
-    \right],
-    \]
-    where $\alpha$ is the significance level. The lower bound of this
-    interval gives a conservative but rigorous guarantee on the true
-    success probability. In Chapter~\ref{chap:env}, we apply this method
-    with $\alpha = 0.10$ to certify the fraction of inputs for which
-    $f^{\ast}$ predicts within $10\%$ normalised error of the true
-    environment output.
+    binomial confidence intervals without parametric assumptions.
+    Given $n$ i.i.d.\ test samples of which $k$ satisfy a binary success
+    criterion, it models each sample as a Bernoulli trial with unknown
+    success probability $p$ and computes
+    \begin{equation}
+        \mathrm{CI}_{1-\alpha}(p)
+        = \left[
+            \mathrm{Beta}^{-1}\!\!\left(\tfrac{\alpha}{2};\, k,\, n{-}k{+}1\right),\;\;
+            \mathrm{Beta}^{-1}\!\!\left(1 - \tfrac{\alpha}{2};\, k{+}1,\, n{-}k\right)
+        \right],
+        \label{eq:cp}
+    \end{equation}
+    where $\alpha$ is the significance level and $\mathrm{Beta}^{-1}$ is
+    the quantile function of the Beta distribution.
+    The lower bound of this interval gives a conservative but rigorous
+    guarantee on the true success probability~$p$.
+    
+    In Chapter~\ref{chap:env}, we define success as the event that
+    $f^{\ast}$'s prediction incurs less than $10\%$ normalised error
+    relative to the true next-state value.
+    Applying the Clopper--Pearson method with $\alpha = 0.10$ yields a
+    certified lower bound on the fraction of inputs for which $f^{\ast}$
+    meets this accuracy threshold.
+    This bound is then propagated into the multi-round verification pipeline
+    (Chapter~\ref{chap:verify}), where a statistical compounding argument
+    quantifies how prediction error accumulates across successive control
+    rounds.
+
+\section{Adversarial Vulnerability of Neural ABR Controllers}
+\label{chap:attack}
+ 
+    This chapter presents the first systematic study of adversarial attacks
+    on ML-based ABR controllers.  We show that a lightweight,
+    specification-guided perturbation of a single input feature is
+    sufficient to induce significant QoE degradation in Pensieve,
+    establishing a concrete threat model and motivating the formal
+    verification framework developed in subsequent chapters.
+    
+    Section~\ref{sec:attack-prelim} reviews the adversarial robustness
+    background needed for this chapter.
+    Section~\ref{sec:attack-surface} characterises the attack surface of
+    neural ABR controllers.
+    Section~\ref{sec:threat-model} defines the threat model.
+    Section~\ref{sec:attack-design} describes the specification-guided
+    attack design.
+    Section~\ref{sec:attack-eval} presents the experimental evaluation.
+    Section~\ref{sec:attack-limitations} discusses limitations.
+    Section~\ref{sec:attack-summary} summarises the chapter.
+    
+    
+    % ---------------------------------------------------------------------------
+    \subsection{Preliminaries: Adversarial Robustness and PGD}
+    \label{sec:attack-prelim}
+    
+    Neural networks are known to be vulnerable to \emph{adversarial
+    examples}: inputs that are imperceptibly perturbed yet cause the model
+    to produce confident but incorrect outputs~\cite{attack}.
+    In the image domain, a rich literature has developed around both attack
+    algorithms---such as the Fast Gradient Sign Method (FGSM) and Projected
+    Gradient Descent (PGD)~\cite{pgd}---and defences including adversarial
+    training and certified robustness methods.
+    
+    PGD is an iterative first-order attack that computes adversarial
+    perturbations by repeatedly taking gradient steps on the loss function
+    and projecting the result back onto a prescribed perturbation set
+    (typically an $\ell_p$-ball).
+    Given input $x$, model $g$, and perturbation budget $\epsilon$, PGD
+    iterates
+    \begin{equation}
+        x^{(k+1)} = \Pi_{\lVert \delta \rVert_p \leq \epsilon}
+            \!\bigl(x^{(k)} + \alpha \cdot \mathrm{sign}\bigl(\nabla_x
+            \mathcal{L}(g(x^{(k)}), y)\bigr)\bigr),
+        \label{eq:pgd}
+    \end{equation}
+    where $\alpha$ is the step size, $\mathcal{L}$ is the loss, and
+    $\Pi$ denotes projection onto the feasible set.
+    
+    While adversarial robustness has been studied extensively in
+    classification settings, its implications for \emph{control} systems
+    remain under-explored.
+    In the ABR context, adversarial perturbations have a distinctive
+    character: the attacker does not alter pixel intensities but rather
+    manipulates observed network metrics (e.g.\ download times), and
+    perturbations must remain physically realisable---for instance, they
+    must respect the definitional coupling between throughput, chunk size,
+    and download time.
+    The remainder of this chapter develops a specification-guided PGD
+    attack tailored to these constraints.
+    
+    
+    % ---------------------------------------------------------------------------
+    \subsection{Attack Surface of Neural ABR Controllers}
+    \label{sec:attack-surface}
+    
+    Neural ABR policies expose a broad input attack surface, making them
+    susceptible to manipulation at multiple layers of the network stack.
+    We identify three representative adversary positions.
+    
+    \paragraph{Passive on-path adversary.}
+    Because download time is measured at the client, any on-path
+    device---such as a public Wi-Fi access point, a compromised home
+    router, or an ISP-level traffic shaper---can inject jitter, delay
+    packets, or disrupt acknowledgments to falsify perceived network
+    performance.
+    
+    \paragraph{Active JavaScript adversary.}
+    A malicious third-party advertisement running in the same browser tab
+    can generate CPU contention or spawn background fetches that interfere
+    with the ABR player's HTTP requests, degrading measured throughput.
+    
+    \paragraph{Content-side manipulator.}
+    A compromised CDN edge server can alter server-side timestamps or
+    response pacing to skew round-trip-time measurements, without modifying
+    the encrypted video payload itself.
+    
+    None of these attack vectors requires access to the player binary or
+    decryption of traffic.  By manipulating a small number of observable
+    signals, an adversary can drive the neural controller toward poor
+    bitrate decisions, leading to quality degradation that end users
+    attribute to the streaming provider.  This asymmetric attribution makes
+    ML-based ABR controllers especially attractive targets.
+    
+    
+    % ---------------------------------------------------------------------------
+    \subsection{Threat Model}
+    \label{sec:threat-model}
+    
+    We consider a network-layer adversary capable of launching targeted
+    Distributed Denial-of-Service (DDoS) attacks to degrade the
+    performance of the ABR controller.  The attacker does not need to
+    compromise the video player or the content delivery infrastructure;
+    instead, it relies on disrupting network conditions to manipulate
+    client-side observations.
+    
+    Potential targets for the DDoS attack include:
+    \begin{itemize}
+        \item \textbf{Video server:} introducing packet delays or throttling
+            response times to inflate perceived download latency.
+        \item \textbf{Home router or access link:} injecting congestion or
+            cross-traffic near the user to induce higher variability in
+            throughput and delay.
+        \item \textbf{Other on-path infrastructure:} such as shared Wi-Fi
+            access points, edge proxies, or ISP-level bottlenecks.
+    \end{itemize}
+    
+    The attacker's primary goal is to increase the observed video download
+    time for the most recent chunk.  By doing so, the attack steers the ABR
+    policy toward lower bitrate selections, ultimately degrading QoE
+    without needing to intercept or alter encrypted video content.
+    
+    
+    % ---------------------------------------------------------------------------
+    \subsection{Specification-Guided Attack Design}
+    \label{sec:attack-design}
+    
+    This section describes the design of our adversarial attack pipeline.
+    We first explain the role of specification guidance
+    (Section~\ref{sec:attack-why-spec}), then detail two simplifications
+    that enable tractable evaluation
+    (Section~\ref{sec:attack-simplification}), describe how specifications
+    are generated (Section~\ref{sec:attack-specgen}), and present the
+    constrained PGD algorithm (Section~\ref{sec:attack-pgd}).
+    
+    
+    % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    \subsubsection{Why Specification Guidance?}
+    \label{sec:attack-why-spec}
+    
+    Unconstrained gradient-based attacks operate over the full input space
+    and often generate physically invalid states---for example, negative
+    throughput values or internal inconsistencies such as
+    $\text{throughput} \times \text{download time} \neq \text{chunk size}$.
+    Such states would either be rejected by sanity checks in the player or
+    neutralised by built-in recovery logic.
+    
+    Incorporating SpecTRA-mined invariants into PGD transforms it into a
+    \emph{specification-guided} attack, where each perturbation step is
+    projected back onto the legal state space.  This design offers three
+    advantages:
+    \begin{itemize}
+        \item \textbf{Plausibility.}  The resulting adversarial states
+            closely resemble natural variations, making them harder to
+            detect via simple anomaly checks.
+        \item \textbf{Efficiency.}  The constrained search space reduces
+            wasted gradient steps, accelerating convergence and avoiding
+            updates that would be clipped away.
+        \item \textbf{Generalisation.}  Staying within the manifold of
+            realistic states increases the likelihood that adversarial
+            examples remain effective when deployed in live systems with
+            internal feature dependencies.
+    \end{itemize}
+    
+    In short, specification-guided attacks combine the optimisation power of
+    gradient methods with the realism needed to influence real-world
+    controllers, bridging the gap between theoretical feasibility and
+    practical exploitability.
+    
+    
+    % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    \subsubsection{Simplifications}
+    \label{sec:attack-simplification}
+    
+    We make two simplifications to enable tractable evaluation.
+    
+    \paragraph{Two-chunk video runs.}
+    Instead of attacking an entire video session---where the number of
+    chunks is user-dependent and varies in length---we treat a two-chunk
+    segment as a complete video run.  This isolates the effect of a single
+    adversarial perturbation on immediate bitrate selection and QoE.
+    
+    \paragraph{Exclusion of rebuffering.}
+    Pensieve's dataset contains no rebuffering events across the sampled
+    video runs, so our experiments omit this component from the QoE
+    calculation.  Moreover, rebuffering behaviour is highly dependent on
+    user interaction patterns (e.g.\ pause, seek, network switching), which
+    are difficult to model accurately in a controlled attack scenario.
+    
+    Under these assumptions, the QoE formula for a video run becomes
+    \begin{equation}
+        \text{QoE}
+            = q(R_1) + q(R_2) - \lvert q(R_1) - q(R_2) \rvert
+            = 2 \cdot \min\{q(R_1),\, q(R_2)\},
+        \label{eq:attack-qoe}
+    \end{equation}
+    where $R_1$ and $R_2$ are the bitrates selected for the two chunks and
+    $q(\cdot)$ is a logarithmic utility function mapping bitrate to
+    perceived quality:
+    \begin{equation}
+        q(R) = \log\!\left(\frac{R}{R_{\min}}\right),
+        \label{eq:utility}
+    \end{equation}
+    with $R_{\min} = 300$~kbps denoting the minimum available bitrate in
+    Pensieve.  This formulation captures the diminishing returns of higher
+    bitrates: increasing bitrate improves quality, but the perceptual gain
+    becomes less pronounced at higher values.
+    
+    
+    % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    \subsubsection{Specification Generation}
+    \label{sec:attack-specgen}
+    
+    We use SpecTRA~\cite{spec-tra} to automatically generate input and
+    output specifications for Pensieve.  SpecTRA analyses logged training
+    traces and extracts concrete pre-/post-condition bounds that serve two
+    purposes in the attack pipeline: they define a valid state manifold,
+    ensuring that perturbed inputs remain physically plausible and
+    consistent with real-world network behaviour, and they restrict the
+    optimisation space of PGD, enabling faster convergence and more stealthy
+    perturbations.
+    
+    \begin{figure}[t]
+        \centering
+        % TODO: include the SpecTRA specification figure from the paper
+        % \includegraphics[width=0.85\linewidth,alt={Example SpecTRA
+        %   specification showing pre-condition bounds on selected input
+        %   features and post-condition constraints on output bitrate and
+        %   QoE.}]{figures/spectra_spec.pdf}
+        \caption{Example specification generated by SpecTRA, showing
+            pre-condition bounds on selected input features and
+            post-condition constraints on output bitrate and QoE.}
+        \label{fig:spectra-spec}
+    \end{figure}
+    
+    For example, as shown in Figure~\ref{fig:spectra-spec}, SpecTRA
+    provides pre-condition bounds on selected input features and
+    post-condition constraints on output behaviour.  The pre-condition
+    specifies that \texttt{Chunks\_left} must lie in the range $[0.0,\,
+    9.6]$, \texttt{Last1\_buffer\_size} in $[11.6,\, 15.1]$,
+    \texttt{Last1\_chunk\_bitrate} is fixed at $2850$~kbps, and
+    \texttt{Last1\_downloadtime} lies in $[1.5,\, 7.9]$.  The
+    post-condition defines allowable values for the controller's output
+    bitrate and expected QoE, restricting the policy to a subset of
+    possible actions and outcomes.  These constraints are encoded into the
+    attack pipeline as projection bounds to ensure that all adversarial
+    inputs remain within the feasible region.
+    
+    
+    % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    \subsubsection{SpecTRA-Constrained PGD Attack}
+    \label{sec:attack-pgd}
+    
+    We implement a targeted adversarial attack using PGD.  The goal is to
+    apply minimal perturbations to the ABR state input in order to force
+    the neural policy to select the lowest bitrate ($300$~kbps), thereby
+    minimising QoE.
+    
+    At each step, PGD performs gradient ascent on the targeted loss
+    function (cross-entropy with respect to the $300$~kbps class), followed
+    by projection back onto a feasible region defined by both an
+    $\ell_\infty$-norm budget and the physical bounds mined by SpecTRA.
+    To maintain stealth and physical plausibility, we apply PGD to only one
+    input feature: \texttt{Last1\_downloadtime}.
+    
+    The attack proceeds iteratively as shown in
+    Algorithm~\ref{alg:pgd-attack}.  In each iteration, the value of
+    \texttt{Last1\_throughput} is updated to remain consistent with the
+    perturbed \texttt{Last1\_downloadtime}, preserving the relationship
+    between throughput and download time and ensuring input realism.
+    
+    \begin{algorithm}[t]
+        \caption{SpecTRA-Constrained PGD Attack}
+        \label{alg:pgd-attack}
+        \begin{algorithmic}[1]
+            \Require Initial state $\mathbf{x}$, model $\pi_\theta$, step
+                    size $\alpha$, perturbation bound $\epsilon$,
+                    specification bounds $\mathbf{B}_{\text{low}}$,
+                    $\mathbf{B}_{\text{high}}$, iterations $T$
+            \Ensure  Adversarial state $\tilde{\mathbf{x}}^{(T)}$
+            \State Initialise: $\tilde{\mathbf{x}}^{(0)} \gets \mathbf{x}$
+            \For{$t = 0$ \textbf{to} $T - 1$}
+                \State Compute gradient:
+                    $\mathbf{g} \gets \nabla_{\tilde{\mathbf{x}}}
+                        \mathcal{L}(\tilde{\mathbf{x}}^{(t)},\, y = 0)$
+                \State Gradient step:
+                    $\tilde{\mathbf{x}}^{(t+\frac{1}{2})} \gets
+                        \tilde{\mathbf{x}}^{(t)} + \alpha \cdot
+                        \mathrm{sign}(\mathbf{g})$
+                \State Project to $\ell_\infty$ ball:
+                    $\tilde{\mathbf{x}}^{(t+\frac{1}{2})} \gets
+                        \mathrm{clip}\bigl(
+                        \tilde{\mathbf{x}}^{(t+\frac{1}{2})},\;
+                        \mathbf{x} - \epsilon,\;
+                        \mathbf{x} + \epsilon\bigr)$
+                \State Project to SpecTRA bounds:
+                    $\tilde{\mathbf{x}}^{(t+1)} \gets
+                        \mathrm{clip}\bigl(
+                        \tilde{\mathbf{x}}^{(t+\frac{1}{2})},\;
+                        \mathbf{B}_{\text{low}},\;
+                        \mathbf{B}_{\text{high}}\bigr)$
+            \EndFor
+            \State \Return $\tilde{\mathbf{x}}^{(T)}$
+        \end{algorithmic}
+    \end{algorithm}
+    
+    This attack is simple, fast to compute, and leverages domain
+    constraints to ensure that adversarial inputs are realistic and
+    plausible under real network conditions.
+    
+    
+    % ---------------------------------------------------------------------------
+    \subsection{Evaluation}
+    \label{sec:attack-eval}
+    
+    We evaluate the attack against the Pensieve ABR agent to assess its
+    vulnerability to specification-guided adversarial perturbations.
+    
+    
+    % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    \subsubsection{Experimental Setup}
+    \label{sec:attack-setup}
+    
+    We evaluate the attack against a single SpecTRA-derived specification
+    using $30{,}000$ test samples randomly generated from the
+    specification.  A test sample is considered a \emph{successful attack}
+    if the selected bitrate both degrades relative to the unperturbed
+    decision and falls outside the nominal output range defined by the
+    post-condition.
+    
+    
+    % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    \subsubsection{Metrics}
+    \label{sec:attack-metrics}
+    
+    We evaluate our attack using three primary metrics:
+    \begin{itemize}
+        \item \textbf{Attack success rate:} the percentage of states where
+            the selected bitrate is both degraded and falls outside the
+            nominal output range defined by the specification (i.e.\
+            out-of-bound).
+        \item \textbf{Average bitrate reduction:} the average decrease in
+            selected bitrate across successfully attacked states, compared
+            to the original, unperturbed decisions.
+        \item \textbf{Average QoE loss:} the mean reduction in QoE
+            resulting from the attack.
+    \end{itemize}
+    These metrics collectively capture both the effectiveness and
+    perceptual impact of the attack on the ABR agent's decision-making.
+    
+    
+    % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    \subsubsection{Results}
+    \label{sec:attack-results}
+    
+    Out of $30{,}000$ test samples, $581$ ($1.9\%$) resulted in successful
+    QoE downgrades---that is, the selected bitrate violated the output
+    bounds defined by the specification and led to degraded quality.
+    
+    \begin{figure}[t]
+        \centering
+        % TODO: include the violin plot figure from the paper
+        % \includegraphics[width=0.85\linewidth,alt={Violin plots showing
+        %   proportional change in download time, bitrate, and QoE after the
+        %   specification-guided PGD attack.}]{figures/violin_plot.pdf}
+        \caption{Proportional change in key metrics after the
+            specification-guided PGD attack.  A perturbation of at most
+            $10\%$ in \texttt{Last1\_downloadtime} (left) causes Pensieve to
+            select markedly lower bitrates ($35$--$65\%$ reduction, centre),
+            which in turn lowers overall QoE by $30$--$40\%$ (right).  Each
+            violin plot shows the distribution of percentage change across
+            all $581$ successful attacks; the dashed red line denotes
+            ``no change.''}
+        \label{fig:attack-violin}
+    \end{figure}
+    
+    \begin{figure}[t]
+        \centering
+        % TODO: include the QoE histogram figure from the paper
+        % \includegraphics[width=0.85\linewidth,alt={Histogram of QoE scores
+        %   before and after the attack, showing a shift from 4.5 to
+        %   2.7.}]{figures/qoe_histogram.pdf}
+        \caption{Histogram of QoE scores before and after the attack.  Blue
+            bars represent the original Pensieve decisions; red bars show
+            outcomes after the specification-guided PGD perturbation.  The
+            majority of successful attacks shift the QoE mode from $4.5$ to
+            $2.7$, indicating a substantial reduction in perceived streaming
+            quality.}
+        \label{fig:attack-qoe-hist}
+    \end{figure}
+    
+    Figure~\ref{fig:attack-violin} illustrates the proportional deviation
+    of key metrics between the attacked and original states.  While
+    download time was increased by no more than $10\%$, this small change
+    caused a substantial reduction in both bitrate ($35$--$65\%$) and QoE
+    ($30$--$40\%$).
+    
+    Figure~\ref{fig:attack-qoe-hist} shows the distribution of QoE scores
+    before and after the attack.  Most successful cases caused a drop in
+    QoE from $4.5$ (original) to $2.7$ (attacked), reflecting a noticeable
+    and user-visible degradation in perceived streaming quality.
+    
+    \subsubsection{Attack Stealth}
+    \label{sec:attack-stealth}
+    
+    All perturbations are limited to a $10\%$ increase in download time,
+    which falls within normal network variance and is unlikely to trigger
+    anomaly detectors that monitor coarse throughput trends.  Because the
+    perturbed states remain inside the SpecTRA-derived valid state manifold,
+    they are indistinguishable from natural network fluctuations when
+    assessed by standard sanity checks.
+    
+    
+    % ---------------------------------------------------------------------------
+    \subsection{Limitations}
+    \label{sec:attack-limitations}
+    
+    While the attack demonstrates the feasibility of adversarial
+    degradation in ML-based ABR systems, it is subject to several
+    simplifying assumptions and scoped constraints.
+    
+    \paragraph{Narrow attack surface.}
+    The attack modifies only one input feature:
+    \texttt{Last1\_downloadtime}.  In real-world scenarios, adversaries may
+    be able to manipulate multiple correlated features (e.g.\ throughput,
+    buffer size), potentially yielding higher success rates and more
+    nuanced attack vectors.
+    
+    \paragraph{Simplified QoE modelling.}
+    We assume a fixed number of video chunks and exclude rebuffering from
+    the QoE calculation.  This decision is based on the absence of
+    rebuffering events in the Pensieve dataset, as well as the difficulty
+    of modelling user-driven behaviours (e.g.\ pause, seek).  However, this
+    abstraction limits realism and may underestimate certain types of
+    degradation.
+    
+    \paragraph{Single specification constraint.}
+    The evaluation uses a single specification derived from Pensieve's
+    training trace.  This restricts the applicability of our findings to one
+    particular operational regime.  Broader generalisation across multiple
+    specifications, content types, and runtime environments remains
+    unexplored.
+    
+    These limitations highlight key avenues for future work, including
+    multi-feature attacks, more expressive QoE models, and wider validation
+    across modern ABR systems and network conditions.  Importantly, the
+    vulnerabilities exposed here---even under conservative
+    assumptions---motivate the formal verification framework developed in
+    the remainder of this thesis.
+    
+    
+    % ---------------------------------------------------------------------------
+    \subsection{Summary}
+    \label{sec:attack-summary}
+    
+    This chapter presented the first systematic study showing that ML-based
+    ABR controllers can be compromised by small, in-bound perturbations.
+    Using SpecTRA to extract realistic specifications, we embedded those
+    constraints in a PGD attack that modifies only one
+    feature---\texttt{Last1\_downloadtime}---by at most $10\%$.  This
+    lightweight manipulation is sufficient to drive Pensieve to select the
+    lowest bitrate in $1.9\%$ of $30{,}000$ test states, reducing average
+    bitrate by $35$--$65\%$ and QoE by $30$--$40\%$ across successful
+    attacks.  Because the perturbations stay inside an empirically valid
+    state manifold, they evade simple sanity checks, exposing a practical
+    security risk for neural systems deployments.
+    
+    These findings establish two concrete motivations for the subsequent
+    chapters.  First, the fact that Pensieve is vulnerable to small
+    perturbations underscores the need for a trustworthy environment model
+    that can support formal reasoning about worst-case behaviour
+    (Chapter~\ref{chap:env}).  Second, the specification-guided attack
+    framework provides the perturbation sets and correctness criteria that
+    seed the end-to-end verification pipeline
+    (Chapter~\ref{chap:verify}).
+
 
 \section{Coffee Chemistry}
 
