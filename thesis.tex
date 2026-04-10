@@ -82,6 +82,11 @@
 \item Assistant Professor Gagandeep Singh
 }
 
+% Downgrade tagpdf paragraph hook mismatch from error to warning
+\ExplSyntaxOn
+\msg_redirect_name:nnn { tag } { para-hook-count-wrong } { warning }
+\ExplSyntaxOff
+
 \begin{document}
 
 % Uncomment the copyrightpage macro to include an automatic copyright page
@@ -258,8 +263,8 @@
     dependencies to remain realisable; otherwise, adversarial analyses
     and verification results describe states that can never arise in
     practice.  Both our attack construction
-    (Chapter~\ref{chap:attack}) and our verification pipeline
-    (Chapter~\ref{chap:verify}) enforce such consistency constraints.
+    (\ref{chap:attack}) and our verification pipeline
+    (\ref{chap:verify}) enforce such consistency constraints.
  
     \paragraph{Challenge~3: Closed-loop environment dynamics.}
     Most critically, Pensieve operates in a \emph{closed loop}: each
@@ -288,7 +293,7 @@
     closed-loop QoE behaviour.
  
     \paragraph{Adversarial vulnerability analysis
-               (Chapter~\ref{chap:attack}).}
+               (\ref{chap:attack}).}
     We present the first systematic study of adversarial attacks on
     ML-based ABR controllers.  Using SpecTRA-derived specifications to
     constrain perturbations to physically valid states, we construct a
@@ -301,7 +306,7 @@
     model and motivate the need for principled formal defences.
  
     \paragraph{Statistically certified environment model
-               (Chapter~\ref{chap:env}).}
+               (\ref{chap:env}).}
     We construct a formally bounded neural predictor $f^{\ast}$ for the
     environment transition function~$f$, trained on real-world traces
     from the Puffer dataset~\cite{fugu}.  Applying Clopper--Pearson
@@ -314,7 +319,7 @@
     the real-world environment dynamics it must account for.
  
     \paragraph{End-to-end QoE verification pipeline
-               (Chapter~\ref{chap:verify}).}
+               (\ref{chap:verify}).}
     We design and implement a multi-round verification pipeline that
     alternates between two phases.  In the \emph{Pensieve phase},
     \texttt{auto\_LiRPA}~\cite{auto-lirpa} with CROWN-Optimised bound
@@ -339,27 +344,27 @@
  
     The remainder of this thesis is organised as follows.
     %
-    Chapter~\ref{chap:background} provides technical background on ABR
+    \ref{chap:background} provides technical background on ABR
     streaming, the Pensieve architecture, adversarial robustness, SpecTRA
     specification mining, environment modelling, neural network
     verification, and statistical certification.
     %
-    Chapter~\ref{chap:attack} presents the adversarial attack study.
+    \ref{chap:attack} presents the adversarial attack study.
     %
-    Chapter~\ref{chap:env} describes the certified environment model.
+    \ref{chap:env} describes the certified environment model.
     %
-    Chapter~\ref{chap:verify} presents the end-to-end verification
+    \ref{chap:verify} presents the end-to-end verification
     pipeline and its theoretical guarantees.
     %
-    Chapter~\ref{chap:eval} evaluates all three contributions
+    \ref{chap:eval} evaluates all three contributions
     experimentally.
     %
-    Chapter~\ref{chap:discussion} discusses trade-offs, limitations, and
+    \ref{chap:discussion} discusses trade-offs, limitations, and
     practical implications.
     %
-    Chapter~\ref{chap:related} surveys related work.
+    \ref{chap:related} surveys related work.
     %
-    Chapter~\ref{chap:conclusion} concludes and outlines future
+    \ref{chap:conclusion} concludes and outlines future
     directions.
 
 \section{Background}
@@ -474,9 +479,9 @@
     
     These specifications serve two roles in this thesis: they constrain
     adversarial perturbations to physically plausible states
-    (Chapter~\ref{chap:attack}), and they provide the initial input
+    (\ref{chap:attack}), and they provide the initial input
     regions for the verification pipeline
-    (Chapter~\ref{chap:verify}).
+    (\ref{chap:verify}).
     
     
     % ---------------------------------------------------------------------------
@@ -518,7 +523,7 @@
     the true output for every input in the region.
     In this thesis, LiRPA is the core bound-computation engine used in both
     the Pensieve verification phase and the environment verification phase
-    of the pipeline described in Chapter~\ref{chap:verify}.
+    of the pipeline described in \ref{chap:verify}.
     
     
     % ---------------------------------------------------------------------------
@@ -554,14 +559,14 @@
     The lower bound of this interval gives a conservative but rigorous
     guarantee on the true success probability~$p$.
     
-    In Chapter~\ref{chap:env}, we define success as the event that
+    In \ref{chap:env}, we define success as the event that
     $f^{\ast}$'s prediction incurs less than $10\%$ normalised error
     relative to the true next-state value.
     Applying the Clopper--Pearson method with $\alpha = 0.10$ yields a
     certified lower bound on the fraction of inputs for which $f^{\ast}$
     meets this accuracy threshold.
     This bound is then propagated into the multi-round verification pipeline
-    (Chapter~\ref{chap:verify}), where a statistical compounding argument
+    (\ref{chap:verify}), where a statistical compounding argument
     quantifies how prediction error accumulates across successive control
     rounds.
 
@@ -789,7 +794,6 @@
     
     \begin{figure}[t]
         \centering
-        % TODO: include the SpecTRA specification figure from the paper
         \includegraphics[width=0.85\linewidth,alt={Example SpecTRA
           specification showing pre-condition bounds on selected input
           features and post-condition constraints on output bitrate and
@@ -1034,10 +1038,10 @@
     chapters.  First, the fact that Pensieve is vulnerable to small
     perturbations underscores the need for a trustworthy environment model
     that can support formal reasoning about worst-case behaviour
-    (Chapter~\ref{chap:env}).  Second, the specification-guided attack
+    (\ref{chap:env}).  Second, the specification-guided attack
     framework provides the perturbation sets and correctness criteria that
     seed the end-to-end verification pipeline
-    (Chapter~\ref{chap:verify}).
+    (\ref{chap:verify}).
 
 
 % =============================================================================
@@ -1049,7 +1053,7 @@
 \section{A Statistically Certified Environment Model}
 \label{chap:env}
 
-    Chapter~\ref{chap:attack} demonstrated that Pensieve is vulnerable to
+    \ref{chap:attack} demonstrated that Pensieve is vulnerable to
     small, specification-guided perturbations.  Designing principled
     defences requires formal reasoning about the controller's closed-loop
     behaviour, which in turn requires a trustworthy model of the
@@ -1411,7 +1415,7 @@
 
     The certified predictor established here feeds directly into the
     end-to-end verification pipeline presented in
-    Chapter~\ref{chap:verify}.  In that pipeline, the Pensieve phase
+    \ref{chap:verify}.  In that pipeline, the Pensieve phase
     partitions the input region into certified subregion--action pairs, and the environment
     phase propagates bounds through $f^{\ast}$ to obtain guaranteed
     next-state bounds.  The Clopper--Pearson certified accuracy derived in
@@ -1428,8 +1432,8 @@
     The previous two chapters established the building blocks for formal
     reasoning about Pensieve's closed-loop behaviour: a concrete threat
     model demonstrating adversarial vulnerability
-    (Chapter~\ref{chap:attack}) and a statistically certified environment
-    predictor $f^{\ast}$ (Chapter~\ref{chap:env}).  This chapter unifies
+    (\ref{chap:attack}) and a statistically certified environment
+    predictor $f^{\ast}$ (\ref{chap:env}).  This chapter unifies
     them into an end-to-end verification pipeline that reasons about
     multi-round QoE properties of the complete neuro-symbolic control loop.
 
@@ -1476,8 +1480,10 @@
     neuro-symbolic system and defines the verification target.
     Section~\ref{sec:verify-pensieve-phase} describes the Pensieve
     verification phase, including our input-region splitting strategy.
-    Section~\ref{sec:reachability-tree} explains how the environment phase and
-    multi-round composition produce a hierarchical reachability tree.
+    Section~\ref{sec:verify-env-phase} describes the environment
+    verification phase.
+    Section~\ref{sec:reachability-tree} explains how multi-round
+    composition of both phases produces a hierarchical reachability tree.
     Section~\ref{sec:verify-impl} describes the implementation optimisations
     that make the pipeline tractable in practice.
     Section~\ref{sec:verify-theory} presents theoretical soundness
@@ -1514,14 +1520,14 @@
     fluctuations, network delay, chunk sizes---whose exact form is unknown.
     While we can observe state transitions in real traces, we cannot
     directly access or verify $f$ itself.  The certified predictor
-    $f^{\ast}$ constructed in Chapter~\ref{chap:env} serves as our
+    $f^{\ast}$ constructed in \ref{chap:env} serves as our
     trustworthy approximation.
 
     \paragraph{QoE metric.}
     The standard Pensieve QoE model (Equation~\ref{eq:qoe}) combines
     bitrate utility, a rebuffering penalty, and a smoothness penalty.
     In our verification setting we set the rebuffering coefficient
-    $\mu = 0$, reducing the per-step QoE to
+    $\mu = 0$, reducing the per-step QoE contribution to
     \begin{equation}
         \mathrm{QoE}(a_t, a_{t-1})
         \;=\; q(a_t)
@@ -1540,29 +1546,32 @@
     the quantities the pipeline \emph{can} certify: the selected bitrate
     and the previous bitrate.
 
-    We reason about \emph{changes} in QoE across control rounds rather
-    than absolute levels.  The per-round QoE change is
+    We reason about the \emph{marginal contribution} of each round to
+    the cumulative QoE.  Because the cumulative QoE up to step~$t$ is
+    $\sum_{i=0}^{t}\bigl[q(a_i) - |q(a_i)-q(a_{i-1})|\bigr]$,
+    the incremental change at step~$t$ is simply
     \begin{equation}
         \Delta\mathrm{QoE}_t
-        \;=\; \mathrm{QoE}(a_t, a_{t-1})
-            \;-\; \mathrm{QoE}(a_{t-1}, a_{t-2}),
+        \;=\; \mathrm{QoE}(a_t,\, a_{t-1})
+        \;=\; q(a_t) \;-\; \lvert q(a_t) - q(a_{t-1}) \rvert,
         \label{eq:delta-qoe}
     \end{equation}
-    where a positive value indicates improvement and a negative value
-    indicates degradation.
+    where a positive value indicates that the selected bitrate contributes
+    positively to the session QoE, and a negative value indicates that
+    the quality-switch penalty exceeds the bitrate utility.
 
     \paragraph{Verification target.}
     Algorithm~\ref{alg:neuro-symbolic} formalises the closed-loop
     interaction between the neural controller and the certified environment
     model.  The system tracks consecutive rounds in which
-    $\Delta\text{QoE}$ falls below a minimum acceptable change
-    threshold~$\alpha$.  The assertion at line~13 enforces that either
-    the QoE change is non-degrading
+    $\Delta\text{QoE}$ falls below a minimum acceptable
+    threshold~$\alpha$.  The assertion at line~11 enforces that either
+    the per-step QoE contribution is acceptable
     (i.e.\ $\Delta\text{QoE}_t \geq \alpha$), or the number of
-    consecutive degradation rounds stays below a tolerance limit~$\beta$.
+    consecutive low-QoE rounds stays below a tolerance limit~$\beta$.
     This $\Delta\text{QoE}$ assertion detects sustained deterioration
-    even when absolute QoE remains nominally acceptable, while still
-    accommodating transient fluctuations under challenging network
+    even when individual actions select high bitrates, while still
+    accommodating transient quality switches under challenging network
     conditions.
 
     \begin{algorithm}[t]
@@ -1572,21 +1581,21 @@
             \Require Initial state $s_0$, Pensieve controller $\mathrm{NN}$,
                     certified predictor $f^{\ast}$, $\Delta$QoE threshold $\alpha$,
                     violation tolerance $\beta$
+            \State $a_{\text{prev}} \gets \bot$
+                \Comment{No previous action at start}
             \State $a \gets \mathrm{NN}(s_0)$
                 \Comment{Initial action from Pensieve}
             \State $s \gets f^{\ast}(s_0,\, a)$
                 \Comment{Environment transition via certified predictor}
-            \State $\text{QoE}_{\text{prev}} \gets \text{QoE}(s_0,\, a)$
-                \Comment{Record initial QoE}
             \State $\mathit{failure\_counter} \gets 0$
             \While{\textbf{true}}
+                \State $a_{\text{prev}} \gets a$
                 \State $a \gets \mathrm{NN}(s)$
                     \Comment{Pensieve outputs next bitrate decision}
                 \State $s \gets f^{\ast}(s,\, a)$
                     \Comment{Update state using certified environment model}
-                \State $\Delta\text{QoE} \gets \text{QoE}(s,\, a) - \text{QoE}_{\text{prev}}$
-                    \Comment{Per-round QoE change}
-                \State $\text{QoE}_{\text{prev}} \gets \text{QoE}(s,\, a)$
+                \State $\Delta\text{QoE} \gets \text{QoE}(a,\, a_{\text{prev}})$
+                    \Comment{Marginal QoE contribution (Equation~\ref{eq:delta-qoe})}
                 \If{$\Delta\text{QoE} < \alpha$}
                     \State $\mathit{failure\_counter} \gets
                         \mathit{failure\_counter} + 1$
@@ -1612,8 +1621,13 @@
     \label{sec:verify-pensieve-phase}
 
     The Pensieve phase takes a bounded input region $[\ell, u] \subseteq
-    \mathbb{R}^{48}$ and determines which of Pensieve's six bitrate actions
-    (Section~\ref{subsec:streaming}) is provably dominant over the entire
+    \mathbb{R}^{48}$, where $\ell, u \in \mathbb{R}^{48}$ are
+    component-wise lower and upper bounds on the full state vector
+    $s = (s^{(1)}, \ldots, s^{(48)})$, encompassing all six input groups:
+    past throughputs, download times, buffer occupancy, past bitrates,
+    available chunk sizes, and remaining chunks
+    (Section~\ref{subsec:streaming}).  The phase determines which of
+    Pensieve's six bitrate actions is provably dominant over the entire
     region.  We first compute output bounds using
     LiRPA (Section~\ref{sec:bg-lirpa}), then apply input-region splitting
     when the initial bounds are insufficient.
@@ -1636,7 +1650,7 @@
         \quad \forall\, i \neq j.
         \label{eq:dominant}
     \end{equation}
-    When this condition holds, we call $[\ell, u]$ a \emph{safe region} for
+    When this condition holds, region $[\ell, u]$ is \emph{certified} for
     action~$a_j$: every input in the region is guaranteed to produce the
     same controller decision.
 
@@ -1672,8 +1686,9 @@
             \textbf{(a)}~For the full region $[\ell, u]$, LiRPA output
             bounds for $a_3$ and $a_4$ overlap: the dominant action
             is ambiguous, so $\Delta\mathrm{QoE}$ cannot be determined.
-            The region is bisected on the throughput bound, producing
-            $[\ell_1, u_1]$ and $[\ell_2, u_2]$.
+            The region is bisected along the most recent throughput
+            dimension, producing $[\ell_1, u_1]$ and $[\ell_2, u_2]$
+            that differ only in that single component.
             \textbf{(b)}~In $[\ell_1, u_1]$ the tighter bounds certify
             $a_3$ as uniquely dominant, yielding a single
             $\Delta\mathrm{QoE}$ value for that subregion.
@@ -1689,21 +1704,26 @@
     Our splitting procedure operates as follows.  Given an input region
     $[\ell, u]$ for which no dominant action can be certified:
     \begin{enumerate}
-        \item \textbf{Throughput bisection.}  We always split on the
-            most recent throughput feature, bisecting at its midpoint:
+        \item \textbf{Throughput bisection.}  Let $d$ denote the index
+            of the most recent throughput in the $48$-dimensional state
+            vector (i.e.\ the last entry in the throughput group).  We
+            bisect the region along dimension~$d$ only, computing the
+            midpoint
             \begin{equation}
-                m = \bigl(\ell_{\mathrm{tp}} + u_{\mathrm{tp}}\bigr) / 2,
+                m = \bigl(\ell^{(d)} + u^{(d)}\bigr) / 2,
                 \label{eq:split-dim}
             \end{equation}
-            producing two subregions $[\ell_1, u_1]$ and $[\ell_2, u_2]$
-            that differ only in the most recent throughput bound.
+            and producing two subregions $[\ell_1, u_1]$ and
+            $[\ell_2, u_2]$ that are identical to $[\ell, u]$ in all
+            $47$ other dimensions but differ in the throughput
+            component: $u_1^{(d)} = m$ and $\ell_2^{(d)} = m$.
             We always split on this single dimension because throughput
             is derived from chunk size divided by chunk download time,
             making it consistently the widest dimension in the input
             region.
         \item \textbf{Re-verification.}  Each subregion is independently
             verified using LiRPA.  If a subregion admits a dominant
-            action, it is marked as a \emph{safe region} with a certified
+            action, it is certified as a subregion--action pair with a
             $\Delta\mathrm{QoE}$ value.  Otherwise, it is placed back in
             the queue for further splitting.
         \item \textbf{Termination and forking.}  The procedure terminates
@@ -1731,21 +1751,16 @@
 
 
     % ===========================================================================
-    \subsection{Multi-Round Reachability Analysis}
-    \label{sec:reachability-tree}
+    \subsection{Environment Verification Phase}
     \label{sec:verify-env-phase}
 
-    Composing the Pensieve and environment phases across $T$ rounds
-    produces a \emph{hierarchical reachability tree}.
-    Figure~\ref{fig:reachability-tree} shows an example tree for $T = 5$ rounds.
-
-    \paragraph{Environment phase.}
     For each subregion--action pair $([\ell, u],\, a_j)$ produced by the
     Pensieve phase, the environment phase computes guaranteed next-state
     bounds.  The inputs to $f^{\ast}$ are constructed by combining the
     state bounds $[\ell, u]$ with the action~$a_j$.  We then
     propagate these bounds through the environment predictor $f^{\ast}$
-    using LiRPA, obtaining
+    (\ref{chap:env}) using LiRPA (Section~\ref{sec:bg-lirpa}),
+    obtaining
     \begin{equation}
         [\ell_{t+1},\, u_{t+1}]
         \supseteq \bigl\{f^{\ast}(s, a_j) : s \in [\ell, u]\bigr\}.
@@ -1758,35 +1773,68 @@
     the environment phase introduces its own over-approximation (from LiRPA
     relaxation of $f^{\ast}$), and because $f^{\ast}$ is itself an
     approximation of the true dynamics~$f$ (with certified accuracy from
-    Chapter~\ref{chap:env}), the next-state bounds grow with each round.
+    \ref{chap:env}), the next-state bounds grow with each round.
     Section~\ref{sec:verify-theory} formalises how these two sources of
     imprecision compound across rounds.
 
+
+    % ===========================================================================
+    \subsection{Multi-Round Reachability Analysis}
+    \label{sec:reachability-tree}
+
+    Composing the Pensieve and environment phases across $T$ rounds
+    produces a \emph{hierarchical reachability tree}.
+    Figure~\ref{fig:reachability-tree} illustrates the structure for $T = 2$ rounds on Specification~5; a complete five-round tree for Specification~1 is provided in Appendix~\ref{app:reachability-trees}.
+
     \begin{figure}[t]
         \centering
-        % TODO: insert the reachability tree figure (Image 1 from the
-        % screenshots).
-        % \includegraphics[width=\linewidth,alt={Hierarchical verification
-        %   tree for four control rounds.  Green nodes are certified
-        %   subregion--action pairs; cream nodes are subregions undergoing
-        %   further splitting.  Each level alternates between Pensieve and
-        %   environment phases.}]{figures/verification_tree.pdf}
-        \caption{Example hierarchical reachability tree for five control
-            rounds.  Each level alternates between Pensieve-phase splitting
-            (producing certified subregion--action pairs shown in green) and environment-phase
-            bound propagation (producing next-state regions shown in cream).
-            The tree fans out as subregions multiply through splitting, then
-            each branch propagates independently through subsequent rounds.}
+        \includegraphics[width=\linewidth]{figures/reachability_tree_src.pdf}
+        \caption{Reachability tree for two control rounds of one
+            specification with initial throughput region $[0.85,\, 4.22]$.
+            Each Pensieve-phase node displays the certified action
+            and the subregion bounds
+            (e.g.\ $[2.54,\, 4.22]\;/\;a_1$).
+            All bounds shown are for the most recent throughput slot;
+            the remaining input dimensions are identical across sibling
+            subregions and omitted for clarity.
+            In the first round the Pensieve phase splits the initial
+            region into eight subregions: six certified with $a_1$ and
+            two with $a_2$.  The environment phase propagates each
+            subregion--action pair through $f^{\ast}$ to produce
+            next-state bounds.  In the second round all eight
+            next-state regions resolve to $a_4$; where the Pensieve
+            phase produces multiple subregions per branch, the first
+            and last are shown with ``$\cdots$'' and a
+            ``$\times n$'' count (e.g.\ $\times 12$).}
         \label{fig:reachability-tree}
+    \end{figure}
+
+    \begin{figure}[t]
+        \centering
+        \includegraphics[width=0.85\linewidth]{figures/delta_qoe_tree_src.pdf}
+        \caption{$\Delta$QoE propagation tree for the same two-round
+            Specification~5 region as Figure~\ref{fig:reachability-tree},
+            using the logarithmic utility $q(R) = \ln(R/R_{\min})$
+            (Equation~\eqref{eq:utility}).
+            Each node shows the certified action, its bitrate, and
+            the $\Delta$QoE (Equation~\eqref{eq:delta-qoe}) with $\nu = 1$.
+            Edge labels show the $\Delta$QoE change between consecutive
+            rounds.  Dashed boxes at the bottom report the cumulative
+            QoE over both rounds.  The $a_1$ path
+            (6~subregions) achieves a cumulative QoE of $+0.50$, while
+            the $a_2$ path (2~subregions) reaches $+1.91$---a
+            $1.41$ gap driven entirely by the initial
+            action selection at round~0.}
+        \label{fig:delta-qoe-tree}
     \end{figure}
 
     \paragraph{Tree structure.}
     The root node represents the initial input region $[\ell_0, u_0]$,
     typically derived from a SpecTRA specification
-    (Section~\ref{sec:bg-spectra}).  At each odd level (Pensieve phase),
+    (Section~\ref{sec:bg-spectra}).  At each Pensieve-phase level,
     the region is split into subregions, each paired with a certified
     action (a single subregion may appear multiple times if it was forked
-    across candidate actions).  At each even level (environment phase),
+    across candidate actions).  At each environment-phase level,
     each subregion--action pair produces a next-state bound via
     $f^{\ast}$.  The children of an environment node are the
     subregion--action pairs produced by the next Pensieve phase applied
@@ -1802,13 +1850,19 @@
     statistical certification of $f^{\ast}$.
 
     \paragraph{QoE analysis.}
-    For each certified action sequence, we compute $\Delta\text{QoE}$
-    bounds (Equation~\ref{eq:delta-qoe}) using the bitrate values associated
-    with the certified actions and the guaranteed state bounds (which
-    determine rebuffering and quality-switch contributions).  A sequence is
-    flagged as potentially problematic if the lower bound on
-    $\Delta\text{QoE}$ at any round falls below the degradation threshold
-    $\alpha$ from Algorithm~\ref{alg:neuro-symbolic}.
+    For each certified action sequence, we compute the $\Delta$QoE
+    (Equation~\ref{eq:delta-qoe}) at every action transition using the
+    logarithmic utility $q(R) = \ln(R/R_{\min})$
+    (Equation~\eqref{eq:utility}).
+    Figure~\ref{fig:delta-qoe-tree} illustrates this
+    propagation for the two-round Specification~5 tree: the initial
+    action selection at round~0 determines whether the cumulative QoE
+    is low ($a_1$ path, cumulative $+0.50$) or high ($a_2$ path,
+    cumulative $+1.91$), even though both paths converge to the same
+    action at round~1.
+    A sequence is flagged as potentially problematic if the $\Delta$QoE
+    is negative at any round, indicating that the quality-switch
+    penalty exceeds the bitrate utility of the selected action.
 
 
     % ===========================================================================
@@ -1816,8 +1870,8 @@
     \label{sec:verify-impl}
 
     The verification pipeline as described is computationally demanding:
-    each call to \texttt{compute\_bounds} carries significant overhead from
-    CROWN-Optimised bound propagation, and the branching structure of the
+    each bound-propagation pass carries significant overhead from
+    CROWN-Optimised relaxation, and the branching structure of the
     reachability tree can produce thousands of subregions per round.  Three
     targeted optimisations make the pipeline tractable in practice:
     a single-pass \textsc{AllDominance} layer that eliminates redundant bound
@@ -1832,27 +1886,26 @@
     \subsubsection{Single-Pass Dominance via \textsc{AllDominance}}
     \label{sec:verify-alldominance}
 
-    A na\"{i}ve implementation of the dominance check
-    (Equation~\ref{eq:dominant}) invokes \texttt{compute\_bounds} once per
+    A naive implementation of the dominance check
+    (Equation~\ref{eq:dominant}) requires one bound-propagation pass per
     candidate action: for each $a_j$, bounds are propagated through the
     network and checked against the remaining actions.  For Pensieve's six
-    actions this incurs six separate bound-propagation passes per region.
+    actions this incurs six separate passes per region.
 
     We eliminate this redundancy by appending a fixed linear layer to the
-    Pensieve actor before wrapping it in \texttt{BoundedModule}.  Define the
-    \emph{dominance matrix} $M \in \mathbb{R}^{30 \times 6}$, where each of
-    the $6 \times 5 = 30$ rows encodes a pairwise difference $y_k - y_i$
+    Pensieve network.  We define a \emph{dominance matrix}
+    $M \in \mathbb{R}^{30 \times 6}$, where each of the
+    $6 \times 5 = 30$ rows encodes a pairwise difference $y_k - y_i$
     for a distinct pair $(k,i)$ with $k \neq i$.  The composite model
     \begin{equation}
         g(x) = M \cdot \mathrm{NN}(x)
         \label{eq:alldominance}
     \end{equation}
     produces a $30$-dimensional output in a single forward pass.  Because $M$
-    has no trainable parameters, LiRPA propagates bounds through it
-    analytically with negligible overhead.  The dominance check then reduces
-    to a single comparison against the lower-bound vector
-    $\underline{g}(x) \in \mathbb{R}^{30}$ returned by
-    \texttt{compute\_bounds}:
+    is a constant matrix with no trainable parameters, LiRPA propagates
+    bounds through it analytically with negligible overhead.  The dominance
+    check then reduces to a single comparison against the lower-bound
+    vector $\underline{g}(x) \in \mathbb{R}^{30}$:
     \begin{equation}
         \text{action } a_k \text{ is dominant}
         \iff
@@ -1861,7 +1914,7 @@
         \label{eq:alldominance-check}
     \end{equation}
     where $a_{\dim} = 6$.  All six dominance decisions are therefore resolved
-    in a single \texttt{compute\_bounds} call---a $6\times$ reduction in the
+    in a single bound-propagation pass---a $6\times$ reduction in the
     dominant computational cost of the inner verification loop.
 
 
@@ -1871,21 +1924,24 @@
 
     CROWN-Optimised bound propagation incurs a fixed per-call overhead
     (coefficient optimisation, graph traversal, GPU kernel launch) that is
-    amortised across all elements in the batch.  Processing subregions one at
-    a time therefore wastes the vast majority of available GPU throughput.
+    amortised across all elements in the batch.  Processing subregions one
+    at a time therefore wastes the vast majority of available GPU
+    throughput.
 
     We exploit the batch dimension of \texttt{auto\_LiRPA}: given $B$
     subregions with bounds $(\ell^{(1)}, u^{(1)}), \ldots,
     (\ell^{(B)}, u^{(B)})$, each of shape $1 \times 6 \times 8$, we stack
     them along the batch axis to form a single $B \times 6 \times 8$
-    \texttt{BoundedTensor} and issue one \texttt{compute\_bounds} call
-    returning a $B \times 30$ lower-bound tensor.  Dominance is then checked
+    input tensor and issue one bound-propagation call returning a
+    $B \times 30$ lower-bound tensor.  Dominance is then checked
     independently for each element of the batch.
 
-    We cap the batch size at $B = 256$ subregions per call.  At this size
-    the H100 GPU's memory bandwidth is saturated while device memory
-    remains within capacity.  For a queue of $N$ pending subregions, the
-    total number of \texttt{compute\_bounds} calls is therefore
+    We cap the batch size at $B = 256$ subregions per call.  Even at this
+    size, GPU utilisation remains modest (approximately $10\%$ compute,
+    $20\%$ memory on an H100), indicating that the bottleneck lies in the
+    per-call overhead of bound propagation rather than raw arithmetic
+    throughput.  For a queue of $N$ pending subregions, the
+    total number of bound-propagation calls is therefore
     $\lceil N / 256 \rceil$ rather than $N$.
 
 
@@ -1894,29 +1950,26 @@
     \label{sec:verify-multigpu}
 
     The Pensieve and environment phases for distinct regions within a given
-    round are mutually independent: no region's verification result depends on
-    another's.  We exploit this structure by distributing regions across four
-    NVIDIA H100 GPUs using Python's \texttt{ThreadPoolExecutor}.
+    round are mutually independent: no region's verification result depends
+    on another's.  We exploit this structure by distributing regions across
+    four NVIDIA H100 GPUs.
 
-    Three worker threads, each pinned to a dedicated device
-    (\texttt{cuda:1}--\texttt{cuda:3}), own independent copies of the
-    \texttt{BoundedModule} instances initialised once at thread start-up via
-    an initialiser function.  A fourth device (\texttt{cuda:0}) is reserved
-    for the main thread's lightweight logging passes---a single forward call
-    per round to record logit bounds for the verification report.  Because
-    all \texttt{BoundedModule} copies are thread-local, there is zero
-    inter-thread synchronisation during bound propagation: each worker
-    processes its assigned regions entirely on its own device.
+    Three worker threads, each pinned to a dedicated GPU, own independent
+    copies of the LiRPA model instances initialised once at thread
+    start-up.  A fourth GPU is reserved for the main thread's lightweight
+    logging passes---a single forward call per round to record logit
+    bounds for the verification report.  Because all model copies are
+    thread-local, there is zero inter-thread synchronisation during bound
+    propagation: each worker processes its assigned regions entirely on
+    its own device.
 
     At each round the main thread partitions the current region list into
-    per-worker tasks, submits them via \texttt{executor.submit}, and collects
-    results with \texttt{future.result}.  After all workers return, the main
-    thread renumbers the workers' local node identifiers to globally unique
-    IDs---an $\mathcal{O}(N)$ pass over the returned records---before logging
-    the completed tree level and dispatching the next round.  This design
-    avoids both GIL contention (CUDA kernels release the GIL) and
-    inter-process serialisation overhead that would arise in a multiprocessing
-    design.
+    per-worker tasks, dispatches them in parallel, and collects results.
+    After all workers return, the main thread renumbers the workers' local
+    node identifiers to globally unique IDs before logging the completed tree level
+    and dispatching the next round.  This multi-threaded design avoids
+    inter-process serialisation overhead while allowing concurrent GPU
+    execution.
 
 
     % ===========================================================================
@@ -1988,7 +2041,7 @@
 
     The certified predictor $f^{\ast}$ satisfies
     $\Pr(\lvert f(x) - f^{\ast}(x) \rvert \leq \epsilon) \geq p$
-    with confidence $1 - \delta$ (Chapter~\ref{chap:env}), where
+    with confidence $1 - \delta$ (\ref{chap:env}), where
     $p = 0.9846$ and $\epsilon = 0.10$ in our experiments.  Over $T$
     rounds, the probability that \emph{all} environment predictions remain
     within tolerance is bounded by:
@@ -2046,51 +2099,52 @@
     \subsubsection{Experimental Setup}
     \label{sec:verify-setup}
 
-    We evaluate the pipeline on $10$ distinct initial input regions, each
+    We evaluate the pipeline on $5$ distinct initial input regions, each
     derived from a different SpecTRA specification
-    (Section~\ref{sec:bg-spectra}).  For each initial region, we run the
+    (Section~\ref{sec:bg-spectra}).  Table~\ref{tab:spec-regions}
+    summarises the key bounds for each specification; remaining input
+    dimensions (chunk sizes, remaining chunks) use the same SpecTRA-derived
+    ranges across all five.
+    For each initial region, we run the
     two-phase pipeline for $T = 5$ control rounds.  The Pensieve phase uses
     CROWN-Optimised bound propagation via
     \texttt{auto\_LiRPA}~\cite{auto-lirpa}.  The environment phase uses the
-    $2$-layer combined model from Chapter~\ref{chap:env} as the certified
+    $2$-layer combined model from \ref{chap:env} as the certified
     predictor~$f^{\ast}$.  Splitting is parallelised across four NVIDIA H100
     GPUs as described in Section~\ref{sec:verify-impl}.
 
-    For each round of each specification, we compute:
-    \begin{itemize}
-        \item the number of subregion--action pairs produced by the Pensieve phase,
-        \item the set of certified actions and their distribution across
-            subregions,
-        \item the width of the next-state bounds produced by the environment
-            phase,
-        \item the per-round $\Delta$QoE: the change in QoE bounds relative
-            to the previous round.
-    \end{itemize}
+    \begin{table}[t]
+        \centering
+        \caption{Initial input regions for the five SpecTRA-derived
+            specifications.  Each row lists the bounds on the most recent
+            throughput, download time, buffer occupancy, and last
+            bitrate that define the specification region.
+            Chunk sizes and remaining chunks are shared across all
+            specifications: chunk sizes range from
+            $[0.11,\, 0.18]$ to $[1.43,\, 2.40]$ across the six
+            bitrate levels, and remaining chunks lie in $[0,\, 0.96]$.}
+        \label{tab:spec-regions}
+        \begin{tabular}{c c c c c}
+            \hline
+            Spec.\ & Throughput & Download time & Buffer & Last bitrate \\
+            \hline
+            1 & $[1.35,\, 11.53]$ & $[0.15,\, 0.66]$ & $[0.40,\, 0.50]$ & $0.6628\;(2850\text{\,kbps})$ \\
+            2 & $[0.85,\, 3.20]$  & $[0.54,\, 1.05]$  & $[0.40,\, 0.50]$ & $0.6628\;(2850\text{\,kbps})$ \\
+            3 & $[0.85,\, 11.53]$ & $[0.15,\, 1.05]$  & $[0.40,\, 0.50]$ & $0.6628\;(2850\text{\,kbps})$ \\
+            4 & $[0.97,\, 3.20]$  & $[0.54,\, 0.92]$  & $[0.40,\, 0.50]$ & $0.6628\;(2850\text{\,kbps})$ \\
+            5 & $[0.85,\, 4.22]$  & $[0.41,\, 1.05]$  & $[0.40,\, 0.50]$ & $0.6628\;(2850\text{\,kbps})$ \\
+            \hline
+        \end{tabular}
+    \end{table}
 
-
-    % ---------------------------------------------------------------------------
-    \subsubsection{Metrics}
-    \label{sec:verify-metrics}
-
-    We report the following metrics:
-    \begin{itemize}
-        \item \textbf{Verification rate:} the fraction of the initial input
-            region that is partitioned into certified subregion--action
-            pairs (including forked subregions paired with each
-            candidate action).
-        \item \textbf{Action distribution:} the set of distinct certified
-            actions across subregion--action pairs, indicating how sensitive
-            Pensieve's decision is to small state variations within the
-            specification region.
-        \item \textbf{Bound growth:} the ratio of next-state interval width
-            to current-state interval width, measuring how quickly
-            over-approximation accumulates across rounds.
-        \item \textbf{$\Delta$QoE per round:} the change in QoE bounds
-            between consecutive rounds, computed from the certified action
-            and the state bounds.  Large negative values indicate rounds
-            where the controller is certified to make a decision that
-            substantially degrades quality.
-    \end{itemize}
+    For each specification we report the per-round structure of the
+    reachability tree and the $\Delta$QoE
+    (Equation~\ref{eq:delta-qoe}) at each action transition,
+    computed from the certified actions and the quality-switch penalty.
+    Figure~\ref{fig:reachability-tree} illustrates the first two rounds
+    for Specification~5; a complete five-round tree for
+    Specification~1 is in Appendix~\ref{app:reachability-trees}
+    (Figure~\ref{fig:tree-spec1}).
 
 
     % ---------------------------------------------------------------------------
@@ -2098,57 +2152,115 @@
     \label{sec:verify-results-detail}
 
     \paragraph{Reachability tree structure.}
-    Figure~\ref{fig:reachability-tree} shows a representative reachability tree
-    for one of the $10$ specifications over $5$ rounds.  The tree exhibits
-    the expected fan-out pattern: the initial region is split into
-    approximately $8$--$10$ subregion--action pairs in the first Pensieve phase,
-    each producing a next-state region via the environment phase, which is
-    then further split in subsequent rounds.  By round~$5$, the tree
-    contains several hundred leaf nodes, each representing a certified
-    action sequence.
+    Figure~\ref{fig:reachability-tree} illustrates the first two rounds
+    for Specification~5 with initial throughput region
+    $[0.85,\, 4.22]$.  The Pensieve phase splits this region into eight
+    subregions---six certified with $a_1$ and two with $a_2$---and the
+    environment phase maps each to a next-state bound via~$f^{\ast}$.
+    In the second round every branch resolves to~$a_4$, though the
+    number of subregions varies: the widest branch requires $12$ splits
+    while the narrowest needs only~$1$.  This asymmetry reflects the
+    non-uniform sensitivity of the Pensieve network---regions where the
+    decision boundary between two actions lies close to the bound
+    midpoint require finer splitting to certify a single action.
 
-    \paragraph{QoE degradation paths.}
-    Across the $10$ specifications, we identify multiple action sequences
-    that lead to substantial QoE drops at particular rounds.  These paths
-    correspond to scenarios where the certified action at one round selects
-    a high bitrate (e.g.\ $a_4 = 2850$~kbps or $a_5 = 4300$~kbps),
-    followed by a sharp drop to a low bitrate ($a_0 = 300$~kbps or
-    $a_1 = 750$~kbps) in a subsequent round.  The resulting quality-switch
-    penalty dominates the QoE calculation, producing large negative
-    $\Delta$QoE values.  Representative degradation sequences include:
-    \begin{itemize}
-        \item $a_4 \to a_2 \to a_5 \to a_2$: repeated drops from high to
-            low bitrate across four rounds, incurring large quality-switch
-            penalties.
-        \item $a_4 \to a_1, a_2 \to a_4 \to a_5 \to a_4, a_5$: a
-            five-round oscillation between high and low actions, with
-            branching at rounds~2 and~5 reflecting subregion-dependent
-            behaviour.
-        \item $a_4 \to a_1, a_0, a_2 \to a_2, a_4 \to a_5 \to a_4, a_5
-            \to a_1, a_4, a_5$: wide action spread in early rounds,
-            indicating high controller sensitivity to small state
-            variations within the specification region.
-    \end{itemize}
-    Here $a_i$ denotes the $i$-th bitrate action in Pensieve's action set
+    A complete five-round tree for Specification~1 is provided in
+    Appendix~\ref{app:reachability-trees} (Figure~\ref{fig:tree-spec1}).
+    By round~$5$, each tree contains several hundred leaf nodes, each
+    representing a fully certified action sequence.
+    Across rounds, the interval width of next-state bounds grows due to
+    cumulative LiRPA over-approximation; the Pensieve-phase splitting
+    partially counteracts this by producing narrower subregions, but
+    the net effect is an exponential increase in the number of tree
+    nodes per round.
+
+    \paragraph{Certified action sequences.}
+    Figure~\ref{fig:action-trees} shows the certified action trees
+    for all five specifications over five control rounds.
+    We write $a_i$ for the $i$-th bitrate in Pensieve's action set
     $\{300, 750, 1200, 1850, 2850, 4300\}$~kbps (indexed from~$0$).
+    The yellow root node represents the initial last bitrate
+    ($a_4 = 2850$~kbps, shared across all specifications).
+    Edge labels give the $\Delta$QoE computed via
+    Equation~\eqref{eq:delta-qoe}; red labels indicate negative $\Delta$QoE
+    (quality degradation).  When multiple actions appear at the same
+    round (e.g.\ $a_4, a_5$), different subregions within the
+    specification resolve to different actions.
+    Light unlabelled cross-edges carry the $\Delta$QoE values listed in the
+    legend at the bottom of the figure.
+
+    \begin{figure}[t]
+        \centering
+        \includegraphics[width=\linewidth]{figures/verification/action_trees.pdf}
+        \caption{Certified action trees with $\Delta$QoE for all
+            five specifications over five control rounds.  Red labels
+            indicate negative $\Delta$QoE (quality degradation); blue labels
+            indicate non-negative $\Delta$QoE.
+            Spec~1 follows a distinctive oscillating path
+            ($a_2 \to a_5 \to a_2$); Specs~2, 3, and~5 exhibit
+            persistent $a_4$/$a_5$ branching; Spec~4 converges
+            monotonically to~$a_5$.}
+        \label{fig:action-trees}
+    \end{figure}
+
+    Three patterns emerge from the data.
+    %
+    First, \emph{rapid escalation}: four of five specifications
+    (Specs~2--5) jump from low-to-mid bitrates ($a_1$--$a_2$) at
+    round~0 to high bitrates ($a_4$--$a_5$) by round~1.  This
+    suggests that the Pensieve controller aggressively ramps up quality
+    when throughput conditions permit, regardless of the initial state
+    subregion.
+    %
+    Second, \emph{high-bitrate oscillation}: Specifications~2, 3, and~5
+    exhibit branching between $a_4$ and~$a_5$ from round~2 onward.
+    Because $a_4 = 2850$~kbps and $a_5 = 4300$~kbps differ by
+    $1450$~kbps, the quality-switch penalty between them is
+    substantial.  Subregions that oscillate between these two actions
+    across rounds incur repeated penalties, leading to sustained QoE
+    degradation.
+    %
+    Third, \emph{action-set width as a sensitivity indicator}:
+    Specification~3 stands out with three distinct actions at both
+    round~0 and round~3, reflecting the widest initial throughput range
+    $[0.85,\, 11.53]$ among all specifications.  The breadth of the
+    certified action set at a given round directly measures the
+    controller's sensitivity to state perturbations within that
+    region.
+
+    \paragraph{QoE implications.}
+    Figure~\ref{fig:delta-qoe-tree} quantifies the $\Delta$QoE propagation
+    for Specification~5 using the logarithmic utility
+    $q(R) = \ln(R/R_{\min})$: subregions assigned $a_1$ at round~0
+    suffer a $\Delta$QoE of $-0.42$, while those assigned $a_2$
+    achieve $+0.52$.  Although both paths recover at round~1 (all
+    subregions resolve to~$a_4$), the cumulative QoE diverges: $+0.50$
+    for the $a_1$ path versus $+1.91$ for the $a_2$ path.  This
+    $1.41$-point gap is determined entirely by the initial action
+    selection, illustrating how a single round of suboptimal action
+    certification can dominate the multi-round QoE outcome.
+
+    Across all five specifications, the most severe QoE degradation
+    occurs in Specification~1, where the sequence
+    $a_2 \to a_5 \to a_2$ produces two large quality-switch penalties
+    in successive rounds: a $3100$~kbps increase from $a_2$ to~$a_5$
+    at round~2, followed by a $3100$~kbps decrease at round~3.
+    In contrast, Specification~4 follows a monotonic path
+    $a_1, a_2 \to a_4 \to a_5 \to a_5$, where quality only increases
+    and then stabilises---the best-case QoE trajectory among all five
+    specifications.
 
     These findings are consistent with the adversarial vulnerability
-    established in Chapter~\ref{chap:attack}: Pensieve is sensitive to
+    established in \ref{chap:attack}: Pensieve is sensitive to
     small state perturbations that can shift the selected action across
-    bitrate levels.  The verification pipeline makes this sensitivity
-    precise and exhaustive: rather than sampling individual adversarial
-    examples, we certify \emph{all} possible behaviours within each
-    specification region.
-
-    \paragraph{Bound growth across rounds.}
-    The interval width of next-state bounds grows with each round due to
-    cumulative LiRPA over-approximation.  In our experiments, the
-    average bound width approximately doubles per round for the first
-    three rounds, then grows more slowly as the subregion splitting in
-    the Pensieve phase compensates by producing narrower certified regions.
-    After $5$ rounds, the bounds remain tight enough for meaningful QoE
-    analysis in the majority of specifications, though a small number
-    of leaf nodes have bounds too wide to draw definitive conclusions.
+    bitrate levels.  The reachability tree makes this sensitivity
+    \emph{exhaustive}: rather than sampling individual adversarial
+    examples, the pipeline certifies all possible behaviours within
+    each specification region.  Where the attack-based analysis of
+    \ref{chap:attack} identifies that vulnerabilities \emph{exist},
+    the verification pipeline precisely characterises \emph{which}
+    state subregions are vulnerable and \emph{how} the resulting action
+    sequences degrade QoE over multiple rounds.
 
     \paragraph{Statistical compounding.}
     Applying the compounding bound (Theorem~\ref{thm:compounding}) with
@@ -2157,21 +2269,11 @@
     $10\%$ normalised error.  This means that the QoE guarantees derived
     from the reachability tree hold for at least $92.46\%$ of real
     trajectories (with $90\%$ confidence), assuming the i.i.d.\ condition
-    discussed in Section~\ref{sec:verify-compounding}.
-
-    % TODO: Add a table or figure summarising per-round $\Delta$QoE
-    % across all 10 specifications, highlighting the rounds and action
-    % transitions that produce the largest QoE drops.
-
-    % \begin{table}[t]
-    %     \centering
-    %     \caption{Per-round $\Delta$QoE for representative action sequences
-    %         across $10$ specifications.  Negative values indicate QoE
-    %         degradation.  Bold entries mark rounds with $\Delta$QoE below
-    %         $-1.0$.}
-    %     \label{tab:delta-qoe}
-    %     % TODO: fill in with actual experimental data
-    % \end{table}
+    discussed in Section~\ref{sec:verify-compounding}.  The remaining
+    $7.54\%$ of trajectories may violate the environment model's error
+    bound at one or more rounds, in which case the certified action
+    sequences are no longer guaranteed---though the Pensieve-phase
+    bounds remain sound regardless of environment accuracy.
 
 
     % ===========================================================================
@@ -2191,7 +2293,7 @@
 
     Three implementation optimisations make the pipeline tractable at scale:
     a single-pass \emph{AllDominance} layer that resolves all six dominance
-    decisions in one \texttt{compute\_bounds} call
+    decisions in one bound-propagation pass
     (Section~\ref{sec:verify-alldominance}); batched bound propagation that
     amortises per-call overhead across up to 256 subregions
     (Section~\ref{sec:verify-batching}); and multi-GPU parallelism across
@@ -2202,18 +2304,39 @@
     (Theorem~\ref{thm:pensieve-sound}), environment-phase soundness
     (Theorem~\ref{thm:env-sound}), and a statistical compounding bound
     (Theorem~\ref{thm:compounding}) quantifying how environment prediction
-    error accumulates across rounds.  Experimental evaluation on $10$
+    error accumulates across rounds.  Experimental evaluation on $5$
     SpecTRA-derived specifications demonstrated that the pipeline can
     identify concrete action sequences leading to significant QoE
     degradation, providing exhaustive coverage that complements the
-    sampling-based adversarial analysis of Chapter~\ref{chap:attack}.
+    sampling-based adversarial analysis of \ref{chap:attack}.
 
     Together with the adversarial vulnerability study
-    (Chapter~\ref{chap:attack}) and the certified environment model
-    (Chapter~\ref{chap:env}), this pipeline completes the three-part
-    framework introduced in Chapter~\ref{chap:intro}: exposing
+    (\ref{chap:attack}) and the certified environment model
+    (\ref{chap:env}), this pipeline completes the three-part
+    framework introduced in \ref{chap:intro}: exposing
     vulnerabilities, certifying the environment, and formally verifying
     closed-loop QoE properties.
 
+\printbibliography[heading=bibintoc,title={References}]
+
+\appendices{
+    \section{Five-Round Reachability Trees}
+    \label{app:reachability-trees}
+
+    This appendix presents the complete five-round reachability tree
+    for Specification~1, including the throughput subregion bounds at
+    each Pensieve-phase node and the next-state bounds at each
+    environment-phase node.
+
+    \begin{figure}[h]
+        \centering
+        \includegraphics[width=\linewidth]{figures/verification/5rounds_1.pdf}
+        \caption{Five-round reachability tree for Specification~1.
+            Green nodes denote certified subregion--action pairs;
+            cream nodes denote next-state regions produced by the
+            environment phase.}
+        \label{fig:tree-spec1}
+    \end{figure}
+}
 
 \end{document}
