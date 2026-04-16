@@ -48,10 +48,6 @@
 \newtheorem{definition}[theorem]{Definition}
 \newtheorem{corollary}[theorem]{Corollary}
 
-% At time of writing, chemistry packages are not compatible with accessibility
-% tagging, but there are no alternatives.
-\usepackage[version=4]{mhchem}
-\usepackage{chemfig}
 \pgfplotsset{compat=1.18}
 
 \addbibresource{./references.bib}
@@ -60,7 +56,7 @@
 \raggedright
 \setlength{\parindent}{1.5em}
 
-\title{Robustness of Neural Networks for Computer Systems}
+\title{Neurosymbolic Verification of Adaptive Bitrate Controllers}
 \author{Xinyi Wei}
 \department{Computer Science}
 
@@ -99,58 +95,41 @@
     % research, including the main findings and conclusions. The abstract should
     % be no more than 350 words in length.
 
-    Machine-learning-based Adaptive Bitrate (ABR) controllers, such as
-    Pensieve~\cite{pensieve}, have demonstrated substantial Quality of
-    Experience (QoE) improvements over hand-crafted heuristics in video
-    streaming systems.  Yet their black-box neural nature introduces two
-    intertwined problems: vulnerability to adversarial manipulation and
-    the absence of formal correctness guarantees.  This thesis addresses
-    both through a three-part framework that progresses from exposing
-    vulnerabilities, to certifying the operating environment, to formally
-    verifying closed-loop QoE properties.
- 
-    We first show that Pensieve is highly susceptible to
-    specification-guided adversarial attacks.  Using pre- and
-    post-condition specifications mined by
-    \texttt{SpecTRA}~\cite{spec-tra}, we construct a Projected Gradient
-    Descent (PGD) attack that perturbs only the most recent chunk
-    download time by at most $10\%$.  This lightweight manipulation
-    reduces the selected bitrate by $35$--$65\%$ and degrades
-    single-round QoE by $30$--$40\%$ across $581$ successful attacks out
-    of $30{,}000$ test states, while remaining within empirically valid
-    network bounds.
- 
-    These vulnerabilities motivate the need for formal guarantees, which
-    in turn require a trustworthy model of the environment in which the
-    controller operates.  We address this by training a neural predictor
-    $f^{\ast}$ for the ABR environment transition function~$f$ on
-    real-world traces from the Puffer dataset using $19$ system features.
-    Applying Clopper--Pearson confidence
-    intervals~\cite{clopper-pearson}, our best model achieves a certified
-    lower bound of $0.9846$ at $90\%$ confidence---at least $98.46\%$ of
-    predictions incur less than $10\%$ normalised error---filling a
-    critical gap in neural controller verification: a trustworthy model
-    of the environment dynamics.
- 
-    Building on this certified predictor, we design an end-to-end QoE
-    verification pipeline that reasons about system behaviour across
-    multiple control rounds.  The pipeline alternates between a
-    \emph{Pensieve phase}, in which
-    \texttt{auto\_LiRPA}~\cite{auto-lirpa} bound propagation and
-    parallel branch-and-bound search partition the input region into safe
-    subregions where a single action provably dominates, and an
-    \emph{environment phase}, in which $f^{\ast}$ propagates interval
-    bounds forward to obtain guaranteed next-state bounds.  Iterating
-    over multiple rounds builds a hierarchical reachability tree
-    supporting formal reasoning about multi-step QoE properties of the
-    complete neuro-symbolic control loop.  We further establish
-    theoretical soundness guarantees and derive a statistical compounding
-    bound characterising how environment prediction error accumulates
-    across rounds.
- 
-    Together, these contributions establish a principled methodology for
-    advancing neural systems controllers from empirical evaluation to
-    formal safety certification.
+    Machine-learning-based adaptive bitrate (ABR) controllers such as
+    Pensieve~\cite{pensieve} have demonstrated substantial Quality of
+    Experience (QoE) improvements over hand-crafted heuristics, yet
+    their black-box nature introduces vulnerability to adversarial
+    manipulation and precludes formal correctness guarantees.  This
+    thesis addresses both through a three-part framework.
+
+    We first show that Pensieve is susceptible to adversarial attack.
+    Using specifications mined by SpecTRA~\cite{spec-tra}, we
+    construct a PGD attack that perturbs only the most recent download
+    time by at most $10\%$, reducing the selected bitrate by
+    $35$--$65\%$ and degrading QoE by $30$--$40\%$ across $581$
+    successful attacks out of $30{,}000$ test states.
+
+    To enable formal verification of the closed-loop system, we train
+    a neural environment predictor $f^{\ast}$ on real-world Puffer
+    traces~\cite{fugu} and certify it via Clopper--Pearson
+    intervals~\cite{clopper-pearson}: at least $98.46\%$ of predictions
+    incur less than $10\%$ normalised error ($90\%$ confidence).
+
+    Building on $f^{\ast}$, we design an end-to-end verification
+    pipeline that alternates between a \emph{Pensieve phase}
+    (auto\_LiRPA~\cite{auto-lirpa} bound propagation with
+    branch-and-bound search) and an \emph{environment phase}
+    ($f^{\ast}$ interval propagation).  Iterating over multiple rounds
+    builds a hierarchical reachability tree~\cite{tree} whose paths enumerate all
+    verified action sequences with associated $\Delta$QoE at each
+    transition, with formal soundness guarantees and a statistical
+    compounding bound ($p^T \geq 0.9246$ for $T = 5$).
+    The pipeline provides a general methodology for formally reasoning
+    about worst-case multi-round behaviour of neural controllers in
+    closed-loop networked systems.  We demonstrate it on five
+    SpecTRA-derived specifications, where the reachability trees and
+    their $\Delta$QoE annotations expose how initial action selection
+    and action-sequence structure determine cumulative QoE outcomes.
 
 
 }
@@ -174,19 +153,16 @@
     source of motivation. I could not have asked for a better advisor
     during my time at UIUC.
 
-    I am also grateful to Debangshu Banerjee, Avaljot Singh, Calvin Xu,
-    and the other members of the Formally Certified Automation and Learning
+    I am also grateful to every member of the Formally Certified Automation and Learning
     (FOCAL) Lab at UIUC for creating a collaborative and intellectually
     stimulating environment. The conversations and shared experiences within
     the group made graduate school both more productive and more enjoyable.
 
-    I am fortunate to have worked alongside exceptional collaborators
-    throughout this research. I am especially thankful to Wanyu Zhao, whose
-    insights---spanning both the big-picture direction of this work and its
-    technical details---shaped my thinking in ways that are reflected
-    throughout this thesis. I also thank Peizhe Liu and Gehan Jia, whose
-    contributions to earlier stages of this research provided the foundation
-    on which this thesis builds.
+    I am grateful to the collaborators with whom I have worked throughout this
+    research. I am especially thankful to Wanyu Zhao for valuable feedback and
+    insights through discussions that shaped the direction of this work. I also
+    thank Peizhe Liu and Gehan Jia for their contributions to earlier stages of
+    this research, which provided the foundation for this thesis.
 
     I thank the Siebel School of Computing and Data Science at the
     University of Illinois Urbana-Champaign for providing an exceptional
@@ -208,36 +184,38 @@
  
     Online video accounts for the dominant share of global Internet
     traffic~\cite{cloudinary-quality}.  To deliver smooth playback over
-    volatile network links, nearly all modern streaming players employ an
-    \emph{adaptive bitrate} (ABR) controller: a component that selects
+    volatile network links, modern streaming players employ an
+    \emph{adaptive bitrate} (ABR) controller that selects
     the video quality level for each chunk based on current network
     conditions, balancing video quality, rebuffering risk, and
     quality-switch penalties into a single Quality of Experience (QoE)
     objective~\cite{pensieve}.
- 
+
     For decades, ABR controllers were built from hand-crafted heuristics.
     Rule-based algorithms such as BOLA~\cite{bola} and
-    MPC~\cite{mpc} are simple and interpretable, but they leave
-    substantial QoE improvements unrealised because they cannot capture
+    MPC~\cite{mpc} are interpretable but cannot capture
     the complex, nonlinear interactions among bandwidth variability,
     buffer dynamics, and chunk sizes.  Pensieve~\cite{pensieve} addresses
-    this gap with a neural network controller trained via reinforcement
-    learning (RL) to maximise QoE-related rewards directly, achieving
+    this gap with a neural network trained via reinforcement
+    learning (RL) to maximise QoE directly, achieving
     gains of $10$--$70\%$ over rule-based baselines.  Other ML-based
     approaches, such as Fugu~\cite{fugu}, combine a supervised throughput
     predictor with model-predictive control to similar effect.
- 
+
     This performance advantage comes at a fundamental cost.  Neural
     networks are opaque: their decision boundaries are encoded in
     millions of floating-point parameters, making their behaviour under
-    worst-case inputs difficult to reason about or formally verify.  A
-    decade of research in computer vision has shown that small, carefully
+    worst-case inputs difficult to reason about or formally verify.
+    Research in computer vision has shown that small, carefully
     crafted perturbations can cause neural networks to produce confident
     but incorrect outputs~\cite{attack}.  This thesis demonstrates that
-    the same fragility afflicts neural systems controllers, and then
-    develops the formal tools needed to reason about it.
- 
- 
+    the same fragility afflicts neural ABR controllers, and develops
+    an end-to-end verification pipeline that certifies closed-loop
+    QoE behaviour by composing neural-network verification with a
+    statistically certified environment model, producing reachability
+    trees~\cite{tree} whose paths enumerate all verified action sequences with
+    associated $\Delta$QoE bounds (defined in \ref{chap:verify}).
+
     % ---- 1.1  Problem Statement and Challenges ----------------------------
     \subsection{Problem Statement and Challenges}
     \label{subsec:problem}
@@ -248,15 +226,33 @@
     three challenges that go beyond classical neural network
     verification.
  
-    \paragraph{Challenge~1: Absence of a correctness specification.}
-    ABR streaming lacks a universal definition of correctness: different
-    algorithms disagree under identical conditions, and no single QoE
-    objective is accepted across deployments.  We address this by using
-    SpecTRA~\cite{spec-tra} to mine pre-/post-condition specifications
-    directly from Pensieve's training traces, grounding correctness in
-    observed behaviour rather than an externally imposed standard.
- 
-    \paragraph{Challenge~2: Physical coupling of input features.}
+    \paragraph{Challenge~1: Multi-round bound propagation.}
+    Traditional neural network verification targets a single forward
+    pass through one network.  QoE verification, by contrast, must
+    reason over \emph{multiple control rounds}.  The system evolves as
+    \begin{equation}
+        s_{t+1} = f(s_t,\, a_t), \qquad a_t = \mathrm{NN}(s_t),
+        \label{eq:closed-loop}
+    \end{equation}
+    where each round's output bounds become the next round's input
+    bounds.  Over-approximation errors therefore compound across the
+    trajectory.  Managing this accumulation while keeping the analysis
+    tractable is a core design challenge of the verification pipeline
+    developed in \ref{chap:verify}.
+
+    \paragraph{Challenge~2: Unknown environment dynamics.}
+    Pensieve operates in a \emph{closed loop}: each bitrate decision
+    shapes the future network state the controller will observe.
+    The neural controller $\mathrm{NN}$ can be analysed with existing
+    verification tools, but the environment transition function~$f$
+    encodes stochastic network dynamics whose exact form is unknown.
+    Any formal guarantee about the \emph{system}, rather than the
+    controller in isolation, requires a trustworthy, bounded model
+    of~$f$ that can be composed with the controller verification at
+    each round.  Prior work on neural-network-based systems (NN4Sys)
+    verification has left this gap unaddressed.
+
+    \paragraph{Challenge~3: Physical coupling of input features.}
     Pensieve's input features are not independent.  Throughput, for
     example, is definitionally chunk size divided by download time.
     Perturbations applied to one feature must respect these physical
@@ -266,74 +262,56 @@
     (\ref{chap:attack}) and our verification pipeline
     (\ref{chap:verify}) enforce such consistency constraints.
  
-    \paragraph{Challenge~3: Closed-loop environment dynamics.}
-    Most critically, Pensieve operates in a \emph{closed loop}: each
-    bitrate decision shapes the future network state the controller will
-    observe.  The system evolves as
-    \begin{equation}
-        s_{t+1} = f(s_t,\, a_t), \qquad a_t = \mathrm{NN}(s_t),
-        \label{eq:closed-loop}
-    \end{equation}
-    where $\mathrm{NN}$ is the neural controller and $f$ is the
-    \emph{environment transition function}.  While $\mathrm{NN}$ can be
-    analysed with existing verification tools, $f$ encodes stochastic
-    network dynamics whose exact form is unknown.  Any formal guarantee
-    about the \emph{system}---rather than the controller in
-    isolation---requires a trustworthy, bounded model of $f$, a gap that
-    prior work on neural-network-based systems (NN4Sys) verification has
-    left unaddressed.
- 
- 
+
     % ---- 1.2  Contributions -----------------------------------------------
     \subsection{Contributions}
     \label{subsec:contributions}
  
     This thesis makes three contributions that together form an
     end-to-end framework for formally reasoning about Pensieve's
-    closed-loop QoE behaviour.
+    closed-loop QoE behaviour.  To the best of our knowledge, this is
+    the first work to perform multi-round QoE verification and analysis
+    for neural ABR controllers.
  
     \paragraph{Adversarial vulnerability analysis
                (\ref{chap:attack}).}
     We present the first systematic study of adversarial attacks on
-    ML-based ABR controllers.  Using SpecTRA-derived specifications to
+    ML-based ABR controllers.  Using SpecTRA~\cite{spec-tra}-derived specifications to
     constrain perturbations to physically valid states, we construct a
-    PGD attack that increases the most recent download time by at most
-    $10\%$.  Across $30{,}000$ test states, the attack finds $581$
-    successful adversarial examples that reduce the selected bitrate by
+    PGD attack that perturbs only the most recent download time by at
+    most $10\%$.  Across $30{,}000$ test states, the attack finds $581$
+    adversarial examples that reduce the selected bitrate by
     $35$--$65\%$ and degrade single-round QoE by $30$--$40\%$, while
-    remaining within empirically valid network bounds and undetectable by
-    coarse anomaly monitors.  These results establish a concrete threat
-    model and motivate the need for principled formal defences.
- 
+    remaining within empirically valid network bounds.  These results
+    establish a concrete threat model and motivate the need for formal
+    verification for QoE analysis.
+
     \paragraph{Statistically certified environment model
                (\ref{chap:env}).}
-    We construct a formally bounded neural predictor $f^{\ast}$ for the
+    We construct a neural predictor $f^{\ast}$ for the
     environment transition function~$f$, trained on real-world traces
-    from the Puffer dataset~\cite{fugu}.  Applying Clopper--Pearson
-    confidence intervals~\cite{clopper-pearson} to the empirical error
-    distribution, our best model achieves a certified lower bound of
+    from the Puffer dataset~\cite{fugu} and equipped with
+    Clopper--Pearson confidence intervals~\cite{clopper-pearson}.
+    Our best model achieves a certified lower bound of
     $0.9846$ at $90\%$ confidence: at least $98.46\%$ of predictions
     incur less than $10\%$ normalised error.  This certified predictor
-    fills the missing symbolic component that closed-loop verification
-    requires, bridging the gap between neural controller analysis and
-    the real-world environment dynamics it must account for.
- 
-    \paragraph{End-to-end QoE verification pipeline
+    provides a reliable approximation of the unkown network transition dynamics
+    for multi-round neurosymbolic ABR controlled video streaming systems.
+
+    \paragraph{End-to-end multi-round QoE verification pipeline
                (\ref{chap:verify}).}
-    We design and implement a multi-round verification pipeline that
-    alternates between two phases.  In the \emph{Pensieve phase},
-    \texttt{auto\_LiRPA}~\cite{auto-lirpa} with CROWN-Optimised bound
-    propagation and a parallel branch-and-bound search partition the
-    input region into \emph{certified subregions}, each paired with an
-    action: either a provably dominant action or, when dominance cannot
-    be established, one of the remaining candidate actions (the same
-    subregion is forked once per candidate).  In the
-    \emph{environment phase}, the certified predictor $f^{\ast}$
-    propagates interval bounds forward to obtain guaranteed next-state
-    bounds.  Iterating for up to five control rounds builds a
-    hierarchical reachability tree supporting formal reasoning about
-    multi-step QoE properties of the complete neuro-symbolic control
-    loop.  We further establish theoretical soundness guarantees and a
+    We design a novel multi-round verification pipeline that alternates
+    between two phases.  In the \emph{Pensieve phase},
+    auto\_LiRPA~\cite{auto-lirpa} bound propagation and a parallel
+    branch-and-bound search partition the input region into verified
+    subregions, each paired with a single verified action.  In the
+    \emph{environment phase}, $f^{\ast}$ propagates interval bounds
+    forward to obtain sound next-state input bounds.  Iterating across
+    rounds produces a hierarchical reachability tree that enumerates
+    all verified action sequences, each annotated with a $\Delta$QoE
+    score (defined in \ref{chap:verify}) at every action transition.
+    The tree provides exhaustive, formally sound coverage of the
+    controller's multi-round QoE behaviour.  We further establish a
     statistical compounding bound quantifying how prediction error
     accumulates across rounds.
  
@@ -349,23 +327,21 @@
     specification mining, environment modelling, neural network
     verification, and statistical certification.
     %
-    \ref{chap:attack} presents the adversarial attack study.
+    \ref{chap:attack} presents the adversarial attack study,
+    including experimental evaluation.
     %
-    \ref{chap:env} describes the certified environment model.
+    \ref{chap:env} describes the certified environment model and
+    its statistical guarantees.
     %
-    \ref{chap:verify} presents the end-to-end verification
-    pipeline and its theoretical guarantees.
-    %
-    \ref{chap:eval} evaluates all three contributions
-    experimentally.
+    \ref{chap:verify} presents the end-to-end QoE verification
+    pipeline, its theoretical guarantees, and reachability results.
     %
     \ref{chap:discussion} discusses trade-offs, limitations, and
-    practical implications.
+    future directions.
     %
     \ref{chap:related} surveys related work.
     %
-    \ref{chap:conclusion} concludes and outlines future
-    directions.
+    \ref{chap:conclusion} concludes the thesis.
 
 \section{Background}
     \label{chap:background}
@@ -387,8 +363,8 @@
     \label{subsec:streaming}
     
     Online video has become the dominant load on the public Internet,
-    accounting for more than 82\% of consumer IP traffic according to
-    Cisco's Visual Networking Index~\cite{cloudinary-quality}.
+    accounting for the majority of consumer IP
+    traffic~\cite{cloudinary-quality}.
     To keep playback smooth over volatile links, nearly all modern streaming
     players employ an ABR controller.
     Video content is delivered in discrete \emph{chunks}, each typically
@@ -413,15 +389,23 @@
     (frequent bitrate changes are perceptually jarring).
     A standard QoE metric combines these factors as
     \begin{equation}
-        \text{QoE}
-            = \sum_t \text{bitrate}_t
-            - \lambda_1 \cdot \sum_t \text{rebuffer time}_t
-            - \lambda_2 \cdot \sum_t \lvert\Delta\text{bitrate}_t\rvert,
+        \mathrm{QoE}
+            = \sum_t q(R_t)
+            - \mu \sum_t B_t
+            - \nu \sum_t \lvert q(R_t) - q(R_{t-1}) \rvert,
         \label{eq:qoe}
     \end{equation}
-    where $\lambda_1$ and $\lambda_2$ are penalty weights that encode
-    deployment-specific preferences.
-    
+    where $q(R_t)$ is the bitrate utility of the selected quality level,
+    $B_t$ is the rebuffering duration, and $\mu$, $\nu$ are penalty
+    weights that encode deployment-specific preferences.
+    A common choice for the utility function is the logarithmic form
+    \begin{equation}
+        q(R) = \log\!\left(\frac{R}{R_{\min}}\right),
+        \label{eq:bg-utility}
+    \end{equation}
+    where $R_{\min}$ is the minimum available bitrate, capturing the
+    diminishing perceptual returns of higher bitrates.
+
     \paragraph{Pensieve.}
     Pensieve~\cite{pensieve} replaces hand-crafted heuristics with a neural
     policy trained via RL.
@@ -457,7 +441,8 @@
     action $a_t$ influences the next state $s_{t+1}$ through an environment
     transition function~$f$ (Equation~\ref{eq:closed-loop}).
     This closed-loop coupling means that any formal analysis of Pensieve
-    must account not only for the neural controller itself but also for the
+    and the neurosymbolic system under which it operates must account 
+    not only for the neural controller itself but also for the
     dynamics of the environment in which it operates.
     
     
@@ -480,8 +465,7 @@
     These specifications serve two roles in this thesis: they constrain
     adversarial perturbations to physically plausible states
     (\ref{chap:attack}), and they provide the initial input
-    regions for the verification pipeline
-    (\ref{chap:verify}).
+    regions for the experiments described in \ref{chap:verify}.
     
     
     % ---------------------------------------------------------------------------
@@ -489,41 +473,41 @@
     \label{sec:bg-lirpa}
     
     \emph{Linear Relaxation-based Perturbation Analysis} (LiRPA) is a
-    family of methods for computing certified output bounds of neural
-    networks over bounded input sets.
-    Given an input region $[\ell, u] \subseteq \mathbb{R}^d$, LiRPA
-    propagates linear relaxations of each layer's activation function
-    through the network, producing sound over-approximations
-    $[\underline{y},\, \overline{y}]$ of the true output range---that is,
-    for every $x \in [\ell, u]$, the network output satisfies
-    $\underline{y} \leq g(x) \leq \overline{y}$.
-    
-    The \texttt{auto\_LiRPA} library~\cite{auto-lirpa} implements several
+    family of \emph{sound} methods for computing output bounds of
+    neural networks over bounded input sets.  Soundness means the
+    computed bounds are guaranteed to contain the true output for
+    every input in the region.  Concretely, given a neural network
+    $g : \mathbb{R}^d \to \mathbb{R}^m$ and an input region
+    $[\ell, u] \subseteq \mathbb{R}^d$, LiRPA propagates linear
+    relaxations of each layer's activation function through the
+    network, producing output bounds
+    $\underline{y},\, \overline{y} \in \mathbb{R}^m$ such that
+    $\underline{y} \leq g(x) \leq \overline{y}$ for every input
+    $x \in [\ell, u]$.
+
+    The auto\_LiRPA library~\cite{auto-lirpa} implements several
     propagation strategies with different cost--tightness trade-offs:
-    
-    \paragraph{Interval Bound Propagation (IBP)}
+
+    \paragraph{Interval Bound Propagation (IBP)~\cite{ibp}}
     propagates axis-aligned interval bounds layer by layer.
-    IBP is fast ($O(1)$ per neuron) but introduces substantial
-    over-approximation at each non-linear activation, causing bounds to
-    grow rapidly with network depth.
-    
+    IBP is fast ($O(n)$ per neuron) but over-approximation grows
+    rapidly with network depth.
+
     \paragraph{CROWN~\cite{crown}}
-    computes linear upper and lower bounding functions for each neuron by
-    back-propagating affine relaxations from the output to the input layer.
-    CROWN bounds are significantly tighter than IBP but require a backward
-    pass for each output dimension.
-    
-    \paragraph{CROWN-Optimised (CROWN-Opt)}
-    extends CROWN by treating the relaxation slopes of unstable ReLU neurons
-    as learnable parameters optimised via gradient descent.
-    This produces the tightest bounds among the three methods at the cost of
-    multiple optimisation iterations.
-    
-    All three methods are \emph{sound}: the computed bounds provably contain
-    the true output for every input in the region.
-    In this thesis, LiRPA is the core bound-computation engine used in both
-    the Pensieve verification phase and the environment verification phase
-    of the pipeline described in \ref{chap:verify}.
+    back-propagates affine relaxations from the output to the input
+    layer, producing significantly tighter bounds than IBP at the cost
+    of a backward pass per output dimension.
+
+    \paragraph{CROWN-Optimised (CROWN-Opt)~\cite{crown-opt}}
+    extends CROWN by optimising the relaxation slopes of unstable
+    ReLU neurons via gradient descent, producing the tightest bounds
+    among the three methods.  A ReLU neuron $\max(0, z)$ is
+    \emph{unstable} when its input bounds span zero
+    ($\underline{z} < 0 < \overline{z}$), so the neuron may be
+    either active or inactive depending on the input.
+
+    In this thesis, LiRPA is the core bound-computation engine for the
+    verification pipeline described in \ref{chap:verify}.
     
     
     % ---------------------------------------------------------------------------
@@ -559,16 +543,9 @@
     The lower bound of this interval gives a conservative but rigorous
     guarantee on the true success probability~$p$.
     
-    In \ref{chap:env}, we define success as the event that
-    $f^{\ast}$'s prediction incurs less than $10\%$ normalised error
-    relative to the true next-state value.
-    Applying the Clopper--Pearson method with $\alpha = 0.10$ yields a
-    certified lower bound on the fraction of inputs for which $f^{\ast}$
-    meets this accuracy threshold.
-    This bound is then propagated into the multi-round verification pipeline
-    (\ref{chap:verify}), where a statistical compounding argument
-    quantifies how prediction error accumulates across successive control
-    rounds.
+    We apply this method to certify the environment model in
+    \ref{chap:env} and to derive a statistical compounding bound
+    for multi-round verification in \ref{chap:verify}.
 
 \section{Adversarial Vulnerability of Neural ABR Controllers}
 \label{chap:attack}
@@ -600,16 +577,18 @@
     examples}: inputs that are imperceptibly perturbed yet cause the model
     to produce confident but incorrect outputs~\cite{attack}.
     In the image domain, a rich literature has developed around both attack
-    algorithms---such as the Fast Gradient Sign Method (FGSM) and Projected
-    Gradient Descent (PGD)~\cite{pgd}---and defences including adversarial
-    training and certified robustness methods.
+    algorithms such as the Fast Gradient Sign Method
+    (FGSM)~\cite{fgsm} and Projected Gradient Descent
+    (PGD)~\cite{pgd}, and defences including adversarial
+    training~\cite{adversarial-training} and certified robustness
+    methods~\cite{certified-robustness}.
     
     PGD is an iterative first-order attack that computes adversarial
     perturbations by repeatedly taking gradient steps on the loss function
     and projecting the result back onto a prescribed perturbation set
     (typically an $\ell_p$-ball).
-    Given input $x$, model $g$, and perturbation budget $\epsilon$, PGD
-    iterates
+    Given input $x$, true label $y$, model $g$, and perturbation
+    budget $\epsilon$, PGD iterates
     \begin{equation}
         x^{(k+1)} = \Pi_{\lVert \delta \rVert_p \leq \epsilon}
             \!\bigl(x^{(k)} + \alpha \cdot \mathrm{sign}\bigl(\nabla_x
@@ -640,19 +619,19 @@
     susceptible to manipulation at multiple layers of the network stack.
     We identify three representative adversary positions.
     
-    \paragraph{Passive on-path adversary.}
+    \paragraph{Passive on-path adversary.}~\cite{on-path}
     Because download time is measured at the client, any on-path
     device---such as a public Wi-Fi access point, a compromised home
     router, or an ISP-level traffic shaper---can inject jitter, delay
     packets, or disrupt acknowledgments to falsify perceived network
     performance.
     
-    \paragraph{Active JavaScript adversary.}
+    \paragraph{Active JavaScript adversary.}~\cite{js-attack}
     A malicious third-party advertisement running in the same browser tab
     can generate CPU contention or spawn background fetches that interfere
     with the ABR player's HTTP requests, degrading measured throughput.
     
-    \paragraph{Content-side manipulator.}
+    \paragraph{Content-side manipulator.}~\cite{cdn-attack}
     A compromised CDN edge server can alter server-side timestamps or
     response pacing to skew round-trip-time measurements, without modifying
     the encrypted video payload itself.
@@ -670,7 +649,7 @@
     \label{sec:threat-model}
     
     We consider a network-layer adversary capable of launching targeted
-    Distributed Denial-of-Service (DDoS) attacks to degrade the
+    Distributed Denial-of-Service~\cite{ddos} (DDoS) attacks to degrade the
     performance of the ABR controller.  The attacker does not need to
     compromise the video player or the content delivery infrastructure;
     instead, it relies on disrupting network conditions to manipulate
@@ -747,8 +726,8 @@
     We make two simplifications to enable tractable evaluation.
     
     \paragraph{Two-chunk video runs.}
-    Instead of attacking an entire video session---where the number of
-    chunks is user-dependent and varies in length---we treat a two-chunk
+    Instead of attacking an entire video session, where the number of
+    chunks is user-dependent and varies in length, we treat a two-chunk
     segment as a complete video run.  This isolates the effect of a single
     adversarial perturbation on immediate bitrate selection and QoE.
     
@@ -792,28 +771,54 @@
     optimisation space of PGD, enabling faster convergence and more stealthy
     perturbations.
     
-    \begin{figure}[t]
+    \begin{table}[t]
         \centering
-        \includegraphics[width=0.85\linewidth,alt={Example SpecTRA
-          specification showing pre-condition bounds on selected input
-          features and post-condition constraints on output bitrate and
-          QoE.}]{figures/spectra_example.png}
-        \caption{Example specification generated by SpecTRA, showing
-            pre-condition bounds on selected input features and
-            post-condition constraints on output bitrate and QoE.}
+        \caption{Example specification generated by SpecTRA~\cite{spec-tra}.
+            The pre-condition defines interval bounds on selected input
+            features; the post-condition constrains the output bitrate
+            and expected QoE.}
         \label{fig:spectra-spec}
-    \end{figure}
+        \begin{subtable}[t]{0.5\linewidth}
+            \centering
+            \caption{Pre-condition}
+            \begin{tabular}{lrr}
+                \hline
+                Feature & Lower & Upper \\
+                \hline
+                \texttt{Chunks\_left}          & $0.0$  & $9.6$  \\
+                \texttt{Last1\_buffer\_size}   & $11.6$ & $15.1$ \\
+                \texttt{Last1\_chunk\_bitrate} & $2850$ & $2850$ \\
+                \texttt{Last1\_downloadtime}   & $1.5$  & $7.9$  \\
+                \hline
+            \end{tabular}
+        \end{subtable}
+        \hfill
+        \begin{subtable}[t]{0.48\linewidth}
+            \centering
+            \caption{Post-condition}
+            \begin{tabular}{ll}
+                \hline
+                Property & Value \\
+                \hline
+                \texttt{cur\_br}  & $[750,\, 1850,\, 2850,\, 4300]$ \\
+                \texttt{qoe\_2}  & $[1.83258]$ \\
+                \hline
+            \end{tabular}
+        \end{subtable}
+    \end{table}
     
-    For example, as shown in Figure~\ref{fig:spectra-spec}, SpecTRA
+    For example, as shown in Table~\ref{fig:spectra-spec}, SpecTRA
     provides pre-condition bounds on selected input features and
     post-condition constraints on output behaviour.  The pre-condition
     specifies that \texttt{Chunks\_left} must lie in the range $[0.0,\,
     9.6]$, \texttt{Last1\_buffer\_size} in $[11.6,\, 15.1]$,
     \texttt{Last1\_chunk\_bitrate} is fixed at $2850$~kbps, and
     \texttt{Last1\_downloadtime} lies in $[1.5,\, 7.9]$.  The
-    post-condition defines allowable values for the controller's output
-    bitrate and expected QoE, restricting the policy to a subset of
-    possible actions and outcomes.  These constraints are encoded into the
+    post-condition constrains two output properties:
+    \texttt{cur\_br}, the predicted next bitrate, must be one of
+    $\{750,\, 1850,\, 2850,\, 4300\}$~kbps, and \texttt{qoe\_2}, the
+    QoE computed over two-chunk video runs (Section~\ref{sec:attack-simplification}), must equal $1.83258$.
+    These constraints are encoded into the
     attack pipeline as projection bounds to ensure that all adversarial
     inputs remain within the feasible region.
     
@@ -892,9 +897,8 @@
     \subsubsection{Experimental Setup}
     \label{sec:attack-setup}
     
-    We evaluate the attack against a single SpecTRA-derived specification
-    using $30{,}000$ test samples randomly generated from the
-    specification.  A test sample is considered a \emph{successful attack}
+    We evaluate the attack using initial values sampled from $30{,}000$ test samples 
+    randomly generated against a single SpecTRA-derived specification.  A test sample is considered a \emph{successful attack}
     if the selected bitrate both degrades relative to the unperturbed
     decision and falls outside the nominal output range defined by the
     post-condition.
@@ -924,9 +928,12 @@
     \subsubsection{Results}
     \label{sec:attack-results}
     
-    Out of $30{,}000$ test samples, $581$ ($1.9\%$) resulted in successful
-    QoE downgrades---that is, the selected bitrate violated the output
-    bounds defined by the specification and led to degraded quality.
+    We sample $30{,}000$ test states from the SpecTRA-derived
+    specification region and run the PGD attack
+    (Algorithm~\ref{alg:pgd-attack}) on each.  Of these, $581$ ($1.9\%$)
+    result in successful QoE downgrades: the perturbed input causes
+    Pensieve to select a bitrate that violates the specification's
+    output bounds, leading to degraded quality.
     
     \begin{figure}[t]
         \centering
@@ -984,38 +991,16 @@
     \subsection{Limitations}
     \label{sec:attack-limitations}
     
-    While the attack demonstrates the feasibility of adversarial
-    degradation in ML-based ABR systems, it is subject to several
-    simplifying assumptions and scoped constraints.
-    
-    \paragraph{Narrow attack surface.}
-    The attack modifies only one input feature:
-    \texttt{Last1\_downloadtime}.  In real-world scenarios, adversaries may
-    be able to manipulate multiple correlated features (e.g.\ throughput,
-    buffer size), potentially yielding higher success rates and more
-    nuanced attack vectors.
-    
-    \paragraph{Simplified QoE modelling.}
-    We assume a fixed number of video chunks and exclude rebuffering from
-    the QoE calculation.  This decision is based on the absence of
-    rebuffering events in the Pensieve dataset, as well as the difficulty
-    of modelling user-driven behaviours (e.g.\ pause, seek).  However, this
-    abstraction limits realism and may underestimate certain types of
-    degradation.
-    
-    \paragraph{Single specification constraint.}
-    The evaluation uses a single specification derived from Pensieve's
-    training trace.  This restricts the applicability of our findings to one
-    particular operational regime.  Broader generalisation across multiple
-    specifications, content types, and runtime environments remains
-    unexplored.
-    
-    These limitations highlight key avenues for future work, including
-    multi-feature attacks, more expressive QoE models, and wider validation
-    across modern ABR systems and network conditions.  Importantly, the
-    vulnerabilities exposed here---even under conservative
-    assumptions---motivate the formal verification framework developed in
-    the remainder of this thesis.
+    The most significant limitation of the attack study is its
+    restriction to \emph{two-chunk video runs}: we evaluate QoE over
+    a short, fixed horizon without tracking how a suboptimal bitrate
+    decision propagates through subsequent rounds.  In practice, ABR
+    controllers operate over many chunks, and a single poor action
+    can compound through the closed-loop dynamics to produce sustained
+    QoE degradation.  This short-horizon scope motivates the
+    multi-round verification pipeline developed in \ref{chap:verify},
+    which provides exhaustive, formally sound coverage of the
+    controller's behaviour across multiple rounds.
     
     
     % ---------------------------------------------------------------------------
@@ -1046,8 +1031,6 @@
 
 % =============================================================================
 %  CHAPTER 4: A STATISTICALLY CERTIFIED ENVIRONMENT MODEL
-%  Restructured from the CS 521 conference paper.
-%  Content preserved; wording refined for thesis register.
 % =============================================================================
 
 \section{A Statistically Certified Environment Model}
@@ -1309,14 +1292,14 @@
         \centering
         \begin{subfigure}[b]{0.48\columnwidth}
             \centering
-            \includegraphics[width=\textwidth]{figures/2-layer.png}
+            \includegraphics[width=\textwidth,alt={Clopper--Pearson certified accuracy for 2-layer environment models across individual daily traces and the combined multi-day dataset.}]{figures/2-layer.png}
             \caption{2-layer models}
             \label{fig:clopper2}
         \end{subfigure}
         \hfill
         \begin{subfigure}[b]{0.48\columnwidth}
             \centering
-            \includegraphics[width=\textwidth]{figures/3-layer.png}
+            \includegraphics[width=\textwidth,alt={Clopper--Pearson certified accuracy for 3-layer environment models across individual daily traces and the combined multi-day dataset.}]{figures/3-layer.png}
             \caption{3-layer models}
             \label{fig:clopper3}
         \end{subfigure}
@@ -1398,7 +1381,7 @@
 
     This chapter presented a statistically certified neural predictor for
     environment transitions in ABR streaming systems.  We formulated the
-    ABR pipeline as a neuro-symbolic system and constructed a formally
+    ABR pipeline as a neurosymbolic system and constructed a formally
     bounded approximation of the environment transition function using
     real-world network traces from the Puffer dataset.  By applying
     Clopper--Pearson confidence intervals, we derived rigorous statistical
@@ -1416,7 +1399,7 @@
     The certified predictor established here feeds directly into the
     end-to-end verification pipeline presented in
     \ref{chap:verify}.  In that pipeline, the Pensieve phase
-    partitions the input region into certified subregion--action pairs, and the environment
+    partitions the input region into verified subregion--action pairs, and the environment
     phase propagates bounds through $f^{\ast}$ to obtain guaranteed
     next-state bounds.  The Clopper--Pearson certified accuracy derived in
     this chapter underpins the statistical compounding bound that quantifies
@@ -1435,14 +1418,14 @@
     (\ref{chap:attack}) and a statistically certified environment
     predictor $f^{\ast}$ (\ref{chap:env}).  This chapter unifies
     them into an end-to-end verification pipeline that reasons about
-    multi-round QoE properties of the complete neuro-symbolic control loop.
+    multi-round QoE properties of the complete neurosymbolic control loop.
 
     The pipeline alternates between two phases at each control round~$t$:
     \begin{enumerate}
         \item \textbf{Pensieve phase.}  Given a bounded input region
-            $[\ell_t, u_t]$, we use \texttt{auto\_LiRPA}~\cite{auto-lirpa}
+            $[\ell_t, u_t]$, we use auto\_LiRPA~\cite{auto-lirpa}
             to compute output bounds for the Pensieve controller.  Where
-            the bounds are too loose to certify a single dominant action,
+            the bounds are too loose to verify a single dominant action,
             we split the input region into smaller subregions and re-verify
             each one.  Subregions where a single action dominates are
             directly certified; subregions that remain ambiguous at the
@@ -1458,26 +1441,26 @@
     \end{enumerate}
     Iterating these two phases for $T$ rounds produces a \emph{hierarchical
     reachability tree} (Section~\ref{sec:reachability-tree}), where each path
-    from root to leaf represents a certified action sequence with
+    from root to leaf represents a verified action sequence with
     guaranteed QoE bounds.  Figure~\ref{fig:pipeline-overview} illustrates
     this two-phase structure.
 
-    \begin{figure}[t]
+    \begin{figure}[th]
         \centering
         \includegraphics[width=0.95\linewidth]{figures/pipeline_overview_src.pdf}
         \caption{Overview of the two-phase verification pipeline.  At each
             round~$t$, the Pensieve phase applies LiRPA bound propagation
-            and region splitting to produce certified actions~$a_t$, and
+            and region splitting to produce verified actions~$a_t$, and
             the environment phase propagates bounds through the certified
             predictor $f^{\ast}$ to yield next-state bounds
             $[\ell_{t+1}, u_{t+1}]$.  Iterating across rounds builds a
             hierarchical reachability tree whose root-to-leaf paths are
-            certified action sequences with guaranteed $\Delta$QoE bounds.}
+            verified action sequences with guaranteed $\Delta$QoE bounds.}
         \label{fig:pipeline-overview}
     \end{figure}
 
     Section~\ref{sec:verify-formulation} formulates the ABR pipeline as a
-    neuro-symbolic system and defines the verification target.
+    neurosymbolic system and defines the verification target.
     Section~\ref{sec:verify-pensieve-phase} describes the Pensieve
     verification phase, including our input-region splitting strategy.
     Section~\ref{sec:verify-env-phase} describes the environment
@@ -1493,10 +1476,10 @@
 
 
     % ===========================================================================
-    \subsection{Neuro-Symbolic System Formulation}
+    \subsection{Neurosymbolic System Formulation}
     \label{sec:verify-formulation}
 
-    We model ABR streaming as a neuro-symbolic closed-loop system composed
+    We model ABR streaming as a neurosymbolic closed-loop system composed
     of two interacting components: (1)~a \emph{neural controller} that
     selects bitrates based on the current state, and (2)~an
     \emph{environment transition function} that determines how each bitrate
@@ -1523,60 +1506,39 @@
     $f^{\ast}$ constructed in \ref{chap:env} serves as our
     trustworthy approximation.
 
-    \paragraph{QoE metric.}
-    The standard Pensieve QoE model (Equation~\ref{eq:qoe}) combines
-    bitrate utility, a rebuffering penalty, and a smoothness penalty.
-    In our verification setting we set the rebuffering coefficient
-    $\mu = 0$, reducing the per-step QoE contribution to
-    \begin{equation}
-        \mathrm{QoE}(a_t, a_{t-1})
-        \;=\; q(a_t)
-            \;-\; \nu\, \lvert q(a_t) - q(a_{t-1}) \rvert,
-        \label{eq:qoe-step}
-    \end{equation}
-    where $q(a_t)$ is the bitrate utility of the selected action and
-    $\nu = 1$ penalises quality switches between consecutive chunks.
-    We omit the rebuffering term because rebuffering depends on the
-    ratio of chunk download time to chunk duration---a quantity that
-    requires real-time network throughput, which is not available inside
-    our bound-propagation framework.  The certified environment predictor
-    $f^{\ast}$ produces bounded next-state estimates, not actual download
-    times, so any rebuffering estimate would be vacuously loose.
-    Dropping the term lets us compute tight, meaningful QoE bounds from
-    the quantities the pipeline \emph{can} certify: the selected bitrate
-    and the previous bitrate.
-
-    We reason about the \emph{marginal contribution} of each round to
-    the cumulative QoE.  Because the cumulative QoE up to step~$t$ is
-    $\sum_{i=0}^{t}\bigl[q(a_i) - |q(a_i)-q(a_{i-1})|\bigr]$,
-    the incremental change at step~$t$ is simply
+    \paragraph{$\Delta$QoE metric.}
+    Following the same rebuffering exclusion as in
+    Section~\ref{sec:attack-simplification} ($\mu = 0$), we define the
+    \emph{marginal QoE contribution} at step~$t$ as
     \begin{equation}
         \Delta\mathrm{QoE}_t
-        \;=\; \mathrm{QoE}(a_t,\, a_{t-1})
         \;=\; q(a_t) \;-\; \lvert q(a_t) - q(a_{t-1}) \rvert,
         \label{eq:delta-qoe}
     \end{equation}
-    where a positive value indicates that the selected bitrate contributes
-    positively to the session QoE, and a negative value indicates that
+    where $q(a_t)$ is the bitrate utility of the selected action
+    (Equation~\ref{eq:bg-utility}) and the second term penalises
+    quality switches between consecutive chunks ($\nu = 1$).
+    A positive value indicates that the selected bitrate contributes
+    positively to the session QoE; a negative value indicates that
     the quality-switch penalty exceeds the bitrate utility.
 
     \paragraph{Verification target.}
-    Algorithm~\ref{alg:neuro-symbolic} formalises the closed-loop
+    Algorithm~\ref{alg:neurosymbolic} formalises the closed-loop
     interaction between the neural controller and the certified environment
     model.  The system tracks consecutive rounds in which
     $\Delta\text{QoE}$ falls below a minimum acceptable
-    threshold~$\alpha$.  The assertion at line~11 enforces that either
+    threshold~$\alpha$.  The assertion at line~15 checks that either
     the per-step QoE contribution is acceptable
-    (i.e.\ $\Delta\text{QoE}_t \geq \alpha$), or the number of
-    consecutive low-QoE rounds stays below a tolerance limit~$\beta$.
+    (i.e.\ $\Delta\text{QoE} \geq \alpha$), or the number of
+    consecutive low-$\Delta\text{QoE}$ rounds stays below a tolerance limit~$\beta$.
     This $\Delta\text{QoE}$ assertion detects sustained deterioration
     even when individual actions select high bitrates, while still
     accommodating transient quality switches under challenging network
     conditions.
 
     \begin{algorithm}[t]
-        \caption{Neuro-symbolic formulation of ABR streaming}
-        \label{alg:neuro-symbolic}
+        \caption{Neurosymbolic formulation of ABR streaming}
+        \label{alg:neurosymbolic}
         \begin{algorithmic}[1]
             \Require Initial state $s_0$, Pensieve controller $\mathrm{NN}$,
                     certified predictor $f^{\ast}$, $\Delta$QoE threshold $\alpha$,
@@ -1611,7 +1573,7 @@
 
     The verification goal is to determine, for a given initial state
     region, whether the $\Delta\text{QoE}$ assertion in
-    Algorithm~\ref{alg:neuro-symbolic} holds across multiple control
+    Algorithm~\ref{alg:neurosymbolic} holds across multiple control
     rounds, or to identify concrete action sequences that lead to
     sustained QoE degradation.
 
@@ -1620,8 +1582,10 @@
     \subsection{Pensieve Verification Phase}
     \label{sec:verify-pensieve-phase}
 
-    The Pensieve phase takes a bounded input region $[\ell, u] \subseteq
-    \mathbb{R}^{48}$, where $\ell, u \in \mathbb{R}^{48}$ are
+    The Pensieve phase (lines~7 of
+    Algorithm~\ref{alg:neurosymbolic}) takes a bounded input region
+    $[\ell, u] \subseteq \mathbb{R}^{48}$, where
+    $\ell, u \in \mathbb{R}^{48}$ are
     component-wise lower and upper bounds on the full state vector
     $s = (s^{(1)}, \ldots, s^{(48)})$, encompassing all six input groups:
     past throughputs, download times, buffer occupancy, past bitrates,
@@ -1638,7 +1602,7 @@
     \label{sec:verify-lirpa-usage}
 
     Given the input region $[\ell, u]$, we invoke
-    \texttt{auto\_LiRPA}~\cite{auto-lirpa} with CROWN-Optimised bound
+    auto\_LiRPA~\cite{auto-lirpa} with CROWN-Optimised bound
     propagation (Section~\ref{sec:bg-lirpa}) to compute lower and upper
     bounds $[\underline{y}_i, \overline{y}_i]$ for each output logit $y_i$,
     $i \in \{0, \ldots, 5\}$.
@@ -1664,7 +1628,7 @@
     \subsubsection{Input-Region Splitting}
     \label{sec:verify-splitting}
 
-    When LiRPA cannot certify a dominant action for the full input region,
+    When LiRPA cannot verify a dominant action for the full input region,
     the output bounds for multiple actions overlap: no single action
     satisfies the dominance condition (Equation~\ref{eq:dominant}), so
     $\Delta\mathrm{QoE}$ cannot be attributed to a single, known action.
@@ -1673,7 +1637,7 @@
     Smaller subregions yield tighter LiRPA bounds, which can separate
     previously overlapping actions.  Figure~\ref{fig:splitting} illustrates
     the two outcomes: a subregion whose bounds are now tight enough to
-    certify a single dominant action produces a clean $\Delta\mathrm{QoE}$
+    verify a single dominant action produces a clean $\Delta\mathrm{QoE}$
     value; a subregion that remains ambiguous after exhausting the split
     budget is handled by propagating the same state bounds forward
     independently for each candidate action.
@@ -1723,7 +1687,7 @@
             region.
         \item \textbf{Re-verification.}  Each subregion is independently
             verified using LiRPA.  If a subregion admits a dominant
-            action, it is certified as a subregion--action pair with a
+            action, it is verified as a subregion--action pair with a
             $\Delta\mathrm{QoE}$ value.  Otherwise, it is placed back in
             the queue for further splitting.
         \item \textbf{Termination and forking.}  The procedure terminates
@@ -1736,18 +1700,18 @@
             omitted.
     \end{enumerate}
 
-    This approach differs from classical branch-and-bound (BaB) methods
-    used in complete neural network verification~\cite{bab} in two key
-    respects.  First, BaB typically branches on \emph{intermediate}
-    neurons (e.g.\ splitting on whether a ReLU is active or inactive),
-    whereas our strategy splits on \emph{input} dimensions.  Input-space
-    splitting is natural in our setting because the subregions produced
-    have direct physical meaning---they correspond to contiguous regions of
-    the ABR state space---and each subregion--action pair is subsequently
-    fed into the environment phase as a self-contained input.  Second, our
-    goal is not to prove a single binary property but to \emph{partition}
-    the input space into certified regions, each paired with an action,
-    building the foundation for multi-round QoE analysis.
+    Classical branch-and-bound (BaB) methods in complete neural network
+    verification~\cite{bab} also use splitting to tighten bounds,
+    on either intermediate neurons or input dimensions.  Our approach
+    differs in two key respects.  First, we split exclusively on a
+    single, \emph{physically meaningful} input dimension (the most
+    recent throughput), so that each subregion corresponds to a
+    contiguous region of the ABR state space and can be fed directly
+    into the environment phase as a self-contained input.  Second,
+    our goal is not to prove a single binary property but to
+    \emph{partition} the input space into verified regions, each
+    paired with an single action, building the foundation for multi-round
+    QoE analysis.
 
 
     % ===========================================================================
@@ -1755,7 +1719,8 @@
     \label{sec:verify-env-phase}
 
     For each subregion--action pair $([\ell, u],\, a_j)$ produced by the
-    Pensieve phase, the environment phase computes guaranteed next-state
+    Pensieve phase, the environment phase (line~8 of
+    Algorithm~\ref{alg:neurosymbolic}) computes guaranteed next-state
     bounds.  The inputs to $f^{\ast}$ are constructed by combining the
     state bounds $[\ell, u]$ with the action~$a_j$.  We then
     propagate these bounds through the environment predictor $f^{\ast}$
@@ -1791,14 +1756,14 @@
         \includegraphics[width=\linewidth]{figures/reachability_tree_src.pdf}
         \caption{Reachability tree for two control rounds of one
             specification with initial throughput region $[0.85,\, 4.22]$.
-            Each Pensieve-phase node displays the certified action
+            Each Pensieve-phase node displays the verified action
             and the subregion bounds
             (e.g.\ $[2.54,\, 4.22]\;/\;a_1$).
             All bounds shown are for the most recent throughput slot;
             the remaining input dimensions are identical across sibling
             subregions and omitted for clarity.
             In the first round the Pensieve phase splits the initial
-            region into eight subregions: six certified with $a_1$ and
+            region into eight subregions: six verified with $a_1$ and
             two with $a_2$.  The environment phase propagates each
             subregion--action pair through $f^{\ast}$ to produce
             next-state bounds.  In the second round all eight
@@ -1816,7 +1781,7 @@
             Specification~5 region as Figure~\ref{fig:reachability-tree},
             using the logarithmic utility $q(R) = \ln(R/R_{\min})$
             (Equation~\eqref{eq:utility}).
-            Each node shows the certified action, its bitrate, and
+            Each node shows the verified action, its bitrate, and
             the $\Delta$QoE (Equation~\eqref{eq:delta-qoe}) with $\nu = 1$.
             Edge labels show the $\Delta$QoE change between consecutive
             rounds.  Dashed boxes at the bottom report the cumulative
@@ -1850,7 +1815,7 @@
     statistical certification of $f^{\ast}$.
 
     \paragraph{QoE analysis.}
-    For each certified action sequence, we compute the $\Delta$QoE
+    For each verified action sequence, we compute the $\Delta$QoE
     (Equation~\ref{eq:delta-qoe}) at every action transition using the
     logarithmic utility $q(R) = \ln(R/R_{\min})$
     (Equation~\eqref{eq:utility}).
@@ -1874,7 +1839,7 @@
     CROWN-Optimised relaxation, and the branching structure of the
     reachability tree can produce thousands of subregions per round.  Three
     targeted optimisations make the pipeline tractable in practice:
-    a single-pass \textsc{AllDominance} layer that eliminates redundant bound
+    a single-pass \textsc{alldominance} layer that eliminates redundant bound
     propagation calls (Section~\ref{sec:verify-alldominance}), batched
     verification that amortises per-call overhead across many subregions
     (Section~\ref{sec:verify-batching}), and multi-GPU parallelism that
@@ -1883,7 +1848,7 @@
 
 
     % ---------------------------------------------------------------------------
-    \subsubsection{Single-Pass Dominance via \textsc{AllDominance}}
+    \subsubsection{Single-Pass Dominance via \textsc{alldominance}}
     \label{sec:verify-alldominance}
 
     A naive implementation of the dominance check
@@ -1906,13 +1871,14 @@
     bounds through it analytically with negligible overhead.  The dominance
     check then reduces to a single comparison against the lower-bound
     vector $\underline{g}(x) \in \mathbb{R}^{30}$:
-    \begin{equation}
-        \text{action } a_k \text{ is dominant}
-        \iff
+    \begin{multline}
+        \text{action } a_k \text{ is verified dominant}
+        \Longleftarrow \\
         \underline{g}(x)_{j} \geq 0
-        \quad \forall\, j \in \{k(a_{\dim}-1),\, \ldots,\, (k+1)(a_{\dim}-1) - 1\},
+        \quad \forall\, j \in \bigl\{k(a_{\dim}{-}1),\, \ldots,\,
+        (k{+}1)(a_{\dim}{-}1) - 1\bigr\},
         \label{eq:alldominance-check}
-    \end{equation}
+    \end{multline}
     where $a_{\dim} = 6$.  All six dominance decisions are therefore resolved
     in a single bound-propagation pass---a $6\times$ reduction in the
     dominant computational cost of the inner verification loop.
@@ -1928,7 +1894,7 @@
     at a time therefore wastes the vast majority of available GPU
     throughput.
 
-    We exploit the batch dimension of \texttt{auto\_LiRPA}: given $B$
+    We exploit the batch dimension of auto\_LiRPA: given $B$
     subregions with bounds $(\ell^{(1)}, u^{(1)}), \ldots,
     (\ell^{(B)}, u^{(B)})$, each of shape $1 \times 6 \times 8$, we stack
     them along the batch axis to form a single $B \times 6 \times 8$
@@ -1985,7 +1951,7 @@
 
     \begin{theorem}[Pensieve-phase soundness]
     \label{thm:pensieve-sound}
-    If LiRPA certifies action $a_j$ as dominant over region $[\ell, u]$
+    If LiRPA verifies action $a_j$ as dominant over region $[\ell, u]$
     (Equation~\ref{eq:dominant}), then for every $s \in [\ell, u]$,
     $\arg\max_i \mathrm{NN}(s)_i = j$.
     \end{theorem}
@@ -2015,24 +1981,31 @@
 
     \begin{corollary}[Pipeline soundness]
     \label{cor:pipeline-sound}
-    Every certified action sequence in the reachability tree is a valid
-    execution of the system $s_{t+1} = f^{\ast}(s_t, a_t)$,
-    $a_t = \mathrm{NN}(s_t)$, for all $s_0 \in [\ell_0, u_0]$.
+    The set of verified action sequences in the reachability tree is a
+    sound over-approximation of all action sequences that the real
+    system $s_{t+1} = f(s_t, a_t)$, $a_t = \mathrm{NN}(s_t)$ can
+    produce for any $s_0 \in [\ell_0, u_0]$, provided that
+    $f^{\ast}$ approximates $f$ within its certified error bound at
+    every round.  That is, every action sequence realizable by the
+    system is contained in the tree, though the tree may also include
+    spurious sequences due to bound looseness.
     \end{corollary}
 
     \begin{proof}
     By induction on the number of rounds.  The base case ($T = 1$) is
     Theorem~\ref{thm:pensieve-sound}.  For the inductive step, suppose
     all states at round~$t$ lie within $[\ell_t, u_t]$.  By
-    Theorem~\ref{thm:pensieve-sound}, the certified action $a_t$ is
+    Theorem~\ref{thm:pensieve-sound}, the verified action $a_t$ is
     selected for every such state.  By Theorem~\ref{thm:env-sound},
-    the next state $f^{\ast}(s_t, a_t) \in [\ell_{t+1}, u_{t+1}]$,
-    so the invariant holds at round $t{+}1$.
+    $f^{\ast}(s_t, a_t) \in [\ell_{t+1}, u_{t+1}]$, and since
+    $f^{\ast}$ is within its certified error bound, the true next
+    state $f(s_t, a_t)$ also lies within $[\ell_{t+1}, u_{t+1}]$.
+    The invariant thus holds at round $t{+}1$.
     \end{proof}
 
-    Note that these guarantees are with respect to the \emph{approximate}
-    environment $f^{\ast}$, not the true dynamics~$f$.  The following
-    subsection quantifies the gap.
+    The condition that $f^{\ast}$ stays within its error bound holds
+    with probability at least $p^T$, quantified by the statistical
+    compounding bound in the following subsection.
 
 
     % ---------------------------------------------------------------------------
@@ -2079,7 +2052,7 @@
     dynamics at each step.  The two sources of imprecision are
     complementary: LiRPA bounds grow geometrically with rounds (a
     deterministic effect), while the compounding bound degrades
-    multiplicatively (a probabilistic effect).
+    multiplicatively (a statistical effect).
 
     \paragraph{Limitations of the i.i.d.\ assumption.}
     The independence assumption in Theorem~\ref{thm:compounding} is an
@@ -2108,7 +2081,7 @@
     For each initial region, we run the
     two-phase pipeline for $T = 5$ control rounds.  The Pensieve phase uses
     CROWN-Optimised bound propagation via
-    \texttt{auto\_LiRPA}~\cite{auto-lirpa}.  The environment phase uses the
+    auto\_LiRPA~\cite{auto-lirpa}.  The environment phase uses the
     $2$-layer combined model from \ref{chap:env} as the certified
     predictor~$f^{\ast}$.  Splitting is parallelised across four NVIDIA H100
     GPUs as described in Section~\ref{sec:verify-impl}.
@@ -2140,7 +2113,7 @@
     For each specification we report the per-round structure of the
     reachability tree and the $\Delta$QoE
     (Equation~\ref{eq:delta-qoe}) at each action transition,
-    computed from the certified actions and the quality-switch penalty.
+    computed from the verified actions and the quality-switch penalty.
     Figure~\ref{fig:reachability-tree} illustrates the first two rounds
     for Specification~5; a complete five-round tree for
     Specification~1 is in Appendix~\ref{app:reachability-trees}
@@ -2155,27 +2128,27 @@
     Figure~\ref{fig:reachability-tree} illustrates the first two rounds
     for Specification~5 with initial throughput region
     $[0.85,\, 4.22]$.  The Pensieve phase splits this region into eight
-    subregions---six certified with $a_1$ and two with $a_2$---and the
+    subregions---six verified with $a_1$ and two with $a_2$---and the
     environment phase maps each to a next-state bound via~$f^{\ast}$.
     In the second round every branch resolves to~$a_4$, though the
     number of subregions varies: the widest branch requires $12$ splits
     while the narrowest needs only~$1$.  This asymmetry reflects the
     non-uniform sensitivity of the Pensieve network---regions where the
     decision boundary between two actions lies close to the bound
-    midpoint require finer splitting to certify a single action.
+    midpoint require finer splitting to verify a single action.
 
     A complete five-round tree for Specification~1 is provided in
     Appendix~\ref{app:reachability-trees} (Figure~\ref{fig:tree-spec1}).
     By round~$5$, each tree contains several hundred leaf nodes, each
-    representing a fully certified action sequence.
+    representing a fully verified action sequence.
     Across rounds, the interval width of next-state bounds grows due to
     cumulative LiRPA over-approximation; the Pensieve-phase splitting
     partially counteracts this by producing narrower subregions, but
     the net effect is an exponential increase in the number of tree
     nodes per round.
 
-    \paragraph{Certified action sequences.}
-    Figure~\ref{fig:action-trees} shows the certified action trees
+    \paragraph{Verified action sequences.}
+    Figure~\ref{fig:action-trees} shows the verified action trees
     for all five specifications over five control rounds.
     We write $a_i$ for the $i$-th bitrate in Pensieve's action set
     $\{300, 750, 1200, 1850, 2850, 4300\}$~kbps (indexed from~$0$).
@@ -2224,7 +2197,7 @@
     Specification~3 stands out with three distinct actions at both
     round~0 and round~3, reflecting the widest initial throughput range
     $[0.85,\, 11.53]$ among all specifications.  The breadth of the
-    certified action set at a given round directly measures the
+    verified action set at a given round directly measures the
     controller's sensitivity to state perturbations within that
     region.
 
@@ -2238,7 +2211,7 @@
     for the $a_1$ path versus $+1.91$ for the $a_2$ path.  This
     $1.41$-point gap is determined entirely by the initial action
     selection, illustrating how a single round of suboptimal action
-    certification can dominate the multi-round QoE outcome.
+    action selection can dominate the multi-round QoE outcome.
 
     Across all five specifications, the most severe QoE degradation
     occurs in Specification~1, where the sequence
@@ -2271,7 +2244,7 @@
     trajectories (with $90\%$ confidence), assuming the i.i.d.\ condition
     discussed in Section~\ref{sec:verify-compounding}.  The remaining
     $7.54\%$ of trajectories may violate the environment model's error
-    bound at one or more rounds, in which case the certified action
+    bound at one or more rounds, in which case the verified action
     sequences are no longer guaranteed---though the Pensieve-phase
     bounds remain sound regardless of environment accuracy.
 
@@ -2280,42 +2253,392 @@
     \subsection{Summary}
     \label{sec:verify-summary}
 
-    This chapter presented an end-to-end verification pipeline for
-    reasoning about multi-round QoE properties of the Pensieve neural ABR
-    controller operating in a closed-loop neuro-symbolic system.  The
-    pipeline alternates between a Pensieve phase---which uses LiRPA bound
-    propagation and input-region splitting to partition the state space into
-    certified subregion--action pairs---and an environment phase---which
-    propagates bounds through the certified predictor $f^{\ast}$ to obtain
-    guaranteed next-state bounds.  Iterating for five control rounds builds
-    a hierarchical reachability tree whose paths enumerate all certified
-    action sequences.
+    This chapter presented an end-to-end verification pipeline that
+    alternates between a Pensieve phase (LiRPA bound propagation with
+    input-region splitting) and an environment phase ($f^{\ast}$ interval
+    propagation) to build a hierarchical reachability tree with
+    $\Delta$QoE annotations over multiple control rounds.  We established
+    formal soundness guarantees (Theorems~\ref{thm:pensieve-sound}
+    and~\ref{thm:env-sound}) and a statistical compounding bound
+    (Theorem~\ref{thm:compounding}).  Together with the adversarial
+    vulnerability study (\ref{chap:attack}) and the certified
+    environment model (\ref{chap:env}), this pipeline completes the
+    three-part framework introduced in \ref{chap:intro}.
 
-    Three implementation optimisations make the pipeline tractable at scale:
-    a single-pass \emph{AllDominance} layer that resolves all six dominance
-    decisions in one bound-propagation pass
-    (Section~\ref{sec:verify-alldominance}); batched bound propagation that
-    amortises per-call overhead across up to 256 subregions
-    (Section~\ref{sec:verify-batching}); and multi-GPU parallelism across
-    four NVIDIA H100 devices using thread-local model copies with no
-    inter-thread synchronisation (Section~\ref{sec:verify-multigpu}).
+% =============================================================================
+%  CHAPTER 6: DISCUSSION
+% =============================================================================
 
-    We established three formal guarantees: Pensieve-phase soundness
-    (Theorem~\ref{thm:pensieve-sound}), environment-phase soundness
-    (Theorem~\ref{thm:env-sound}), and a statistical compounding bound
-    (Theorem~\ref{thm:compounding}) quantifying how environment prediction
-    error accumulates across rounds.  Experimental evaluation on $5$
-    SpecTRA-derived specifications demonstrated that the pipeline can
-    identify concrete action sequences leading to significant QoE
-    degradation, providing exhaustive coverage that complements the
-    sampling-based adversarial analysis of \ref{chap:attack}.
+\section{Discussion}
+\label{chap:discussion}
 
-    Together with the adversarial vulnerability study
-    (\ref{chap:attack}) and the certified environment model
-    (\ref{chap:env}), this pipeline completes the three-part
-    framework introduced in \ref{chap:intro}: exposing
-    vulnerabilities, certifying the environment, and formally verifying
-    closed-loop QoE properties.
+    This chapter reflects on the key trade-offs and limitations of the
+    framework developed in this thesis, and discusses how its two
+    analytical approaches---adversarial attack and formal
+    verification---reinforce each other.
+
+
+    % ---------------------------------------------------------------------------
+    \subsection{Soundness versus Tightness}
+    \label{sec:disc-soundness}
+
+    A central tension in the verification pipeline is the trade-off
+    between soundness and tightness.  LiRPA-based bound propagation is
+    sound by construction: every verified action sequence is a valid
+    execution of the neurosymbolic system.  However, the bounds are
+    necessarily \emph{over-approximate}---the verified action set
+    includes all true behaviours but may also include spurious ones.
+
+    This over-approximation manifests as \emph{action ambiguity}: when
+    no single action's lower output bound exceeds the upper bounds of
+    all others (Equation~\ref{eq:dominant}), the dominance condition
+    fails and $\Delta$QoE cannot be attributed to a unique action.
+    Input-region splitting resolves most such cases by bisecting the
+    region until bounds are tight enough to verify a single action;
+    subregions that remain ambiguous at the maximum split depth are
+    forked---the same state bounds are paired with each remaining
+    candidate action, creating parallel branches in the reachability
+    tree.  However, the linear relaxation that CROWN-Optimised applies to
+    unstable ReLU neurons (those whose pre-activation range spans zero)
+    is inherently imprecise, and this imprecision compounds across
+    layers in both the Pensieve controller and the environment
+    predictor.  Specification~3, which spans the
+    widest throughput range, illustrates the effect: three distinct
+    actions appear at rounds~0 and~3, driven partly by genuine
+    controller sensitivity and partly by bound looseness.
+
+    Despite this looseness, the pipeline produces actionable results.
+    The identified action sequences and $\Delta$QoE values are sound,
+    and the qualitative findings---reduced QoE gains from oscillatory
+    sequences in Specification~1, monotonic recovery in
+    Specification~4---are robust to over-approximation.
+
+
+    % ---------------------------------------------------------------------------
+    \subsection{Limitations}
+    \label{sec:disc-limitations}
+
+    \paragraph{QoE completeness.}
+    The QoE metric omits the rebuffering penalty ($\mu = 0$) because
+    the certified environment predictor produces bounded next-state
+    estimates rather than actual download times.  Rebuffering depends on
+    whether the selected bitrate exceeds the available throughput for
+    long enough to drain the playback buffer, a condition that requires
+    tight bounds on both throughput \emph{and} buffer occupancy over
+    time.  Our environment predictor bounds only the next-state
+    throughput; propagating those bounds through a buffer dynamics model
+    would compound the over-approximation at each step, yielding
+    rebuffering intervals so wide as to be uninformative.
+    Since rebuffering is often the dominant factor in perceived quality,
+    the reported $\Delta$QoE values represent an \emph{optimistic} view
+    of system performance: the true QoE may be lower in regions where
+    the controller selects a high bitrate that the network cannot
+    sustain.
+
+    \paragraph{Scalability.}
+    The reachability tree grows exponentially with both the number of
+    rounds and the degree of action ambiguity at each round.  Five
+    rounds are tractable on four NVIDIA H100 GPUs, but each additional
+    round multiplies the frontier by the number of candidate actions per
+    subregion---in Specification~3, this branching factor reaches three,
+    producing hundreds of leaf nodes by round~4.  Longer horizons would
+    require either convergence-based pruning (terminating branches whose
+    action set has stabilised) or substantially more computation.
+    The five-round horizon is nonetheless sufficient to reveal the key
+    behavioural patterns: oscillatory degradation, persistent branching,
+    and monotonic convergence all emerge within the first three to four
+    rounds.
+
+    \paragraph{Assertion thresholds.}
+    Algorithm~\ref{alg:neurosymbolic} parameterises the verification
+    target with a $\Delta$QoE threshold $\alpha$ and a consecutive
+    violation tolerance $\beta$, which we do not instantiate with
+    specific values.  The appropriate thresholds depend on
+    deployment context: a live-television service may tolerate no
+    negative $\Delta$QoE ($\alpha = 0$, $\beta = 1$), while a
+    best-effort mobile player might accept moderate switches
+    ($\alpha = -1.0$).  Rather than choosing values that would anchor
+    the analysis to one operating point, we report raw $\Delta$QoE for
+    all verified sequences, enabling operators to apply their own
+    policy post hoc.
+
+    \paragraph{Single controller and dataset.}
+    The pipeline is evaluated on Pensieve---a feed-forward network with
+    a discrete action set---trained and tested on Puffer
+    traces~\cite{fugu}.  Extending to controllers with different
+    architectures (e.g.\ Fugu's hybrid MPC design) would require
+    adapting the Pensieve verification phase; Fugu's MPC component
+    introduces a discrete optimisation step outside the scope of
+    differentiable bound propagation.  Similarly, the environment
+    predictor is trained on a single dataset; its certified accuracy
+    may not transfer to networks with substantially different traffic
+    characteristics.  The SpecTRA specifications are likewise derived
+    from Pensieve's training traces and cover only a subset of the
+    reachable state space.
+
+
+    % ---------------------------------------------------------------------------
+    \subsection{Attack--Verification Synergy}
+    \label{sec:disc-synergy}
+
+    The adversarial attack (\ref{chap:attack}) and the verification
+    pipeline (\ref{chap:verify}) address the same question---how does
+    Pensieve behave under worst-case inputs?---from complementary
+    angles.  The attack is \emph{targeted} and \emph{incomplete}: it
+    finds specific inputs that cause degradation but cannot guarantee
+    exhaustive coverage.  The verification is \emph{exhaustive} and
+    \emph{sound}: it certifies all possible behaviours within a region
+    but is limited by bound looseness and computational cost.
+
+    The two reinforce each other.  The attack identifies which
+    specifications contain vulnerable states, guiding verification
+    toward regions where formal analysis is most valuable.  Conversely,
+    the reachability tree validates attack findings: if an adversarial
+    action sequence appears in the certified tree, the vulnerability is
+    confirmed; if not, the attack may have exploited states outside the
+    certified region.  The experimental results bear this out: the
+    attack found $581$ adversarial examples near action boundaries,
+    and the verification pipeline reveals the same sensitivity
+    structurally---specifications with wider throughput ranges exhibit
+    more action branching, confirming that decision boundaries are
+    dense in those regions.
+
+
+    % ---------------------------------------------------------------------------
+    \subsection{Future Directions}
+    \label{sec:disc-future}
+
+    Several directions could strengthen the framework.
+    Integrating complete methods (MILP, neuron-level branch-and-bound)
+    would reduce spurious action branching, and modelling Markovian
+    correlation between successive states would tighten the compounding
+    bound beyond the current i.i.d.\ assumption.
+    A certified download-time model could incorporate rebuffering into
+    the QoE metric, closing the largest gap with the standard Pensieve
+    objective.
+    Finally, the environment model and specification mining components
+    are controller-agnostic; extending to other ABR controllers
+    (e.g.\ Fugu) requires only adapting the Pensieve verification
+    phase.
+
+
+% =============================================================================
+%  CHAPTER 7: RELATED WORK
+% =============================================================================
+
+\section{Related Work}
+\label{chap:related}
+
+    This chapter surveys related work across the areas that intersect
+    in this thesis: neural network verification, adversarial robustness
+    in control systems, adaptive bitrate streaming, and formal methods
+    for networked systems.
+
+
+    % ---------------------------------------------------------------------------
+    \subsection{Neural Network Verification}
+    \label{sec:related-nnv}
+
+    Formal verification of neural networks originated with
+    Reluplex~\cite{reluplex}, an SMT-based solver for networks with
+    ReLU activations, and its successor Marabou~\cite{marabou}, which
+    added support for larger architectures and richer property types.
+    These \emph{complete} methods can prove or disprove a property
+    exactly but suffer from exponential worst-case complexity.
+    Mixed-integer linear programming (MILP)
+    formulations~\cite{bab} offer an alternative complete approach,
+    encoding ReLU networks as linear programs with integer constraints;
+    branch-and-bound algorithms improve tractability by lazily
+    splitting ReLU states.
+
+    \emph{Incomplete} (but sound) methods trade precision for
+    scalability.  Bound-propagation methods such as
+    CROWN~\cite{crown} compute linear relaxations of the network,
+    producing sound output bounds in polynomial time.  The optimised
+    variant $\alpha$,$\beta$-CROWN~\cite{abcrown} combines
+    bound propagation with branch-and-bound and has dominated the
+    International Verification of Neural Networks Competition
+    (VNN-COMP)~\cite{vnncomp} across multiple years.  The
+    auto\_LiRPA~\cite{auto-lirpa} library generalises these
+    techniques to arbitrary architectures and supports GPU-accelerated
+    batch verification.
+
+    Most verification work targets classification or regression
+    networks in isolation: given an input region (typically an
+    $\ell_p$-ball), does the network maintain its prediction?  This
+    thesis extends the verification target to multi-round closed-loop
+    control, where the network's output feeds back into its future
+    input through an environment model---a setting that requires
+    composing verification across two networks over multiple time
+    steps.
+
+
+    % ---------------------------------------------------------------------------
+    \subsection{Verification of Neural Network-Based Systems}
+    \label{sec:related-nn4sys}
+
+    A growing line of work applies neural network verification to
+    \emph{systems} settings where the network operates as a component
+    within a larger pipeline.  Wu et al.~\cite{splitting} verify
+    properties of GNN-based job schedulers, addressing challenges of
+    deeper networks and richer specifications (strategy-proofness,
+    sharing incentive) than those encountered in image classification.
+    SpecTRA~\cite{spec-tra} mines pre-/post-condition specifications
+    from system traces, enabling verification of neural components
+    without externally imposed correctness criteria.
+    ArjomandBigdeli et al.~\cite{nn4sys-verification} verify safety of
+    neural network control systems in continuous time.  They abstract
+    the controller into piecewise linear models with bounded error,
+    verify the abstraction with $\alpha$-$\beta$-CROWN, and compose it
+    with CORA reachability analysis over the plant dynamics to check
+    closed-loop safety properties.
+
+    A common limitation across this body of work is the treatment of
+    the \emph{environment}.  Existing approaches either verify the
+    neural component in isolation---ignoring feedback
+    dynamics---or assume a known, symbolic environment model.  In
+    closed-loop systems like ABR streaming, the controller's action
+    alters the state it will observe next, so single-step verification
+    provides incomplete coverage.  This thesis addresses this gap by
+    constructing a statistically certified neural environment model and
+    composing it with the controller verification over multiple rounds.
+
+
+    % ---------------------------------------------------------------------------
+    \subsection{Adversarial Robustness in Control Systems}
+    \label{sec:related-adversarial}
+
+    Adversarial vulnerability of neural networks was first
+    demonstrated in image classification~\cite{attack}, with the Fast
+    Gradient Sign Method (FGSM)~\cite{goodfellow-fgsm} and Projected
+    Gradient Descent (PGD)~\cite{pgd} becoming standard attack
+    algorithms.  Huang et al.~\cite{huang-adversarial-rl} extended
+    these techniques to deep RL, showing that policies trained on Atari
+    games are vulnerable to small observation perturbations that cause
+    catastrophic performance drops.  Gleave et
+    al.~\cite{gleave-adversarial-policies} demonstrated that
+    adversarial \emph{policies}---agents trained to exploit an
+    opponent's learned policy---can defeat RL agents in multi-agent
+    settings even without directly perturbing observations.
+
+    On the defence side, randomized smoothing~\cite{randomized-smoothing}
+    provides probabilistic certified robustness guarantees by
+    averaging predictions over Gaussian-perturbed inputs, but applies
+    to classifiers rather than sequential control policies.
+    Certified training methods that incorporate verification bounds
+    into the training loss have shown promise for small networks but
+    do not scale to the multi-step, closed-loop setting considered
+    here.
+
+    The ABR streaming setting differs from prior adversarial robustness
+    work in two respects.  First, input features are \emph{physically
+    coupled}: throughput is definitionally chunk size divided by
+    download time, so perturbations must respect this constraint to
+    remain realisable.  Second, the adversary's capabilities are
+    constrained by the network stack rather than arbitrary
+    $\ell_p$-balls: perturbations must correspond to plausible network
+    conditions.  The specification-guided PGD attack in
+    \ref{chap:attack} addresses both constraints by restricting
+    perturbations to SpecTRA-derived input regions.
+
+
+    % ---------------------------------------------------------------------------
+    \subsection{Adaptive Bitrate Streaming}
+    \label{sec:related-abr}
+
+    ABR algorithms have evolved through three generations.
+    Buffer-based approaches such as BOLA~\cite{bola} select bitrates
+    based on current buffer occupancy, offering simplicity and
+    theoretical optimality guarantees under idealised conditions.
+    Model-predictive control approaches such as
+    MPC~\cite{mpc} use throughput forecasts to plan bitrate
+    trajectories over a short horizon.  Oboe~\cite{oboe} auto-tunes
+    ABR algorithm parameters to match detected network conditions,
+    bridging rule-based and adaptive approaches.
+
+    Learning-based controllers represent the current frontier.
+    Pensieve~\cite{pensieve} trains a neural network via reinforcement
+    learning to maximise a composite QoE objective, achieving
+    $10$--$70\%$ gains over rule-based baselines.
+    Fugu~\cite{fugu} combines a supervised throughput predictor with
+    model-predictive control, demonstrating that hybrid
+    learned--algorithmic designs can match or exceed pure-RL
+    approaches in live deployment.
+
+    Despite these QoE gains, the robustness properties of learning-based
+    controllers have received little attention.  Pensieve was evaluated
+    under simulated and real network traces but not under adversarial
+    conditions or formal analysis.  Fugu's MPC component is
+    interpretable and can be analysed independently, but its learned
+    throughput predictor remains susceptible to input perturbations.
+    To our knowledge, this thesis provides the first formal robustness
+    analysis of a neural ABR controller, encompassing both adversarial
+    vulnerability assessment and exhaustive reachability verification.
+
+
+    % ---------------------------------------------------------------------------
+    \subsection{Formal Methods for Networked Systems}
+    \label{sec:related-formal-net}
+
+    Formal verification has a long history in networked systems.
+    Header Space Analysis~\cite{hsa} introduced geometric reasoning
+    about packet transformations, enabling static reachability checking
+    across network configurations.  Subsequent tools extended these
+    ideas to richer property classes including loop-freedom, isolation,
+    and equivalence checking.
+
+    These methods operate on symbolic, rule-based systems where the
+    forwarding logic is encoded in match-action tables with finite
+    state spaces.  The introduction of neural components into network
+    systems---the NN4Sys paradigm---disrupts this tradition: neural
+    networks encode continuous, nonlinear decision boundaries that
+    resist the finite-state abstractions on which classical network
+    verification relies.  Bridging these two worlds requires combining
+    neural network verification techniques (such as LiRPA) with
+    domain-specific modelling of the system environment, as developed
+    in this thesis.
+
+
+% =============================================================================
+%  CHAPTER 8: CONCLUSION
+% =============================================================================
+
+\section{Conclusion}
+\label{chap:conclusion}
+
+    This thesis developed an end-to-end framework for formally
+    reasoning about the closed-loop QoE behaviour of neural ABR
+    controllers, addressing four challenges: the absence of
+    correctness specifications, physical coupling of input features,
+    closed-loop environment dynamics, and multi-network verification
+    composition.
+
+    A specification-guided PGD attack on Pensieve found $581$
+    adversarial examples across $30{,}000$ states, reducing bitrate by
+    $35$--$65\%$ with a perturbation budget of just $10\%$ on a single
+    feature (\ref{chap:attack}).  A statistically certified
+    environment predictor achieved $\geq 98.46\%$ accuracy at $90\%$
+    confidence, providing the missing symbolic component for
+    closed-loop analysis (\ref{chap:env}).  Building on these, we
+    designed an end-to-end verification pipeline that alternates
+    between Pensieve-phase bound propagation and environment-phase
+    interval propagation to build hierarchical reachability trees with
+    $\Delta$QoE annotations over multiple control rounds, with formal
+    soundness guarantees and a statistical compounding bound of
+    $p^5 \geq 0.9246$ (\ref{chap:verify}).
+
+    The pipeline provides a general methodology for formally reasoning
+    about worst-case multi-round behaviour of neural controllers in
+    closed-loop networked systems.  By enumerating all verified action
+    sequences and their $\Delta$QoE within each specification region,
+    the reachability tree provides exhaustive coverage that complements
+    the targeted but incomplete coverage of adversarial attacks.
+    As neural controllers increasingly replace hand-crafted heuristics
+    in networked systems, the techniques developed here, certified
+    environment modelling and compositional reachability analysis,
+    provide a foundation for principled reasoning about their
+    worst-case behaviour.
+
 
 \printbibliography[heading=bibintoc,title={References}]
 
@@ -2330,9 +2653,9 @@
 
     \begin{figure}[h]
         \centering
-        \includegraphics[width=\linewidth]{figures/verification/5rounds_1.pdf}
+        \includegraphics[width=\linewidth,alt={Complete five-round reachability tree for Specification 1, showing verified subregion--action pairs at each Pensieve-phase node and next-state bounds at each environment-phase node.}]{figures/verification/5rounds_1.pdf}
         \caption{Five-round reachability tree for Specification~1.
-            Green nodes denote certified subregion--action pairs;
+            Green nodes denote verified subregion--action pairs;
             cream nodes denote next-state regions produced by the
             environment phase.}
         \label{fig:tree-spec1}
