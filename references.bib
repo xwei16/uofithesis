@@ -10,6 +10,75 @@
   doi={10.1109/EIT.2018.8500144}
 }
 
+@inbook{pruning,
+author = {Fan, Mengchen and Zhang, Tianyun and Geng, Baocheng},
+title = {A Unified Framework for the Convergence and Weight Pruning in Federated Learning},
+year = {2025},
+isbn = {9798400720055},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3743093.3770930},
+abstract = {Federated learning (FL) offers a decentralized approach to machine learning. In FL, models are trained by the data from multiple devices or clients without necessarily centralizing this data, thus preserving privacy and reducing the need for data transfer. Despite its potential, FL faces inherent obstacles, most notably the challenge of achieving a fast convergence rate, especially with large, non-identically distributed client datasets. Also, weight pruning, an effective approach to reduce the number of weight parameters in a deep neural network, is hard to be employed on FL because it involves additional challenges to the convergence between different clients. To deal with the above issues, we propose a unified framework for the convergence and weight pruning in FL. We leverage the inherent structure of the Alternating Direction Method of Multipliers (ADMM) to partition the primary loss function for individual clients and apply specific dual variables to hasten the global model’s convergence. Our method, when tested on MNIST and SVHN datasets, consistently outperforms the established approaches on the convergence rate and model accuracy under the same weight pruning rate. For example, when the ResNet-18 model is pruned by 100 \texttimes{} , our method achieves 0.65\% to 3.09\% accuracy improvement for the SVHN dataset under federated learning with non-identically distributed (non-IID) data distribution compared with the established approaches.},
+booktitle = {Proceedings of the 7th ACM International Conference on Multimedia in Asia},
+articleno = {152},
+numpages = {5}
+}
+@inproceedings{ouroboros,
+ author = {Tan, Cheng and Liu, Changliu and Jia, Zhihao and Wei, Tianhao},
+ booktitle = {Proceedings of Machine Learning and Systems},
+ editor = {D. Song and M. Carbin and T. Chen},
+ pages = {728--742},
+ publisher = {Curan},
+ title = {Building Verified Neural Networks for Computer Systems with Ouroboros},
+ url = {https://proceedings.mlsys.org/paper_files/paper/2023/file/f025a252767e89e63426e42b4716d311-Paper-mlsys2023.pdf},
+ volume = {5},
+ year = {2023}
+}
+
+@InProceedings{congestion-control,
+  title = 	 {A Deep Reinforcement Learning Perspective on Internet Congestion Control},
+  author =       {Jay, Nathan and Rotman, Noga and Godfrey, Brighten and Schapira, Michael and Tamar, Aviv},
+  booktitle = 	 {Proceedings of the 36th International Conference on Machine Learning},
+  pages = 	 {3050--3059},
+  year = 	 {2019},
+  editor = 	 {Chaudhuri, Kamalika and Salakhutdinov, Ruslan},
+  volume = 	 {97},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 {09--15 Jun},
+  publisher =    {PMLR},
+  pdf = 	 {http://proceedings.mlr.press/v97/jay19a/jay19a.pdf},
+  url = 	 {https://proceedings.mlr.press/v97/jay19a.html},
+  abstract = 	 {We present and investigate a novel and timely application domain for deep reinforcement learning (RL): Internet congestion control. Congestion control is the core networking task of modulating traffic sources’ data-transmission rates to efficiently utilize network capacity, and is the subject of extensive attention in light of the advent of Internet services such as live video, virtual reality, Internet-of-Things, and more. We show that casting congestion control as RL enables training deep network policies that capture intricate patterns in data traffic and network conditions, and leverage this to outperform the state-of-the-art. We also highlight significant challenges facing real-world adoption of RL-based congestion control, including fairness, safety, and generalization, which are not trivial to address within conventional RL formalism. To facilitate further research and reproducibility of our results, we present a test suite for RL-guided congestion control based on the OpenAI Gym interface.}
+}
+
+
+
+@misc{c3,
+      title={Canopy: Property-Driven Learning for Congestion Control}, 
+      author={Chenxi Yang and Divyanshu Saxena and Rohit Dwivedula and Kshiteej Mahajan and Swarat Chaudhuri and Aditya Akella},
+      year={2026},
+      eprint={2412.10915},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2412.10915}, 
+}
+
+@article{markov,
+author = {Mohamed S. Yamany  and Dulcy M. Abraham  and Samuel Labi },
+title = {Comparative Analysis of Markovian Methodologies for Modeling Infrastructure System Performance},
+journal = {Journal of Infrastructure Systems},
+volume = {27},
+number = {2},
+pages = {04021003},
+year = {2021},
+doi = {10.1061/(ASCE)IS.1943-555X.0000604},
+
+URL = {https://ascelibrary.org/doi/abs/10.1061/%28ASCE%29IS.1943-555X.0000604},
+eprint = {https://ascelibrary.org/doi/pdf/10.1061/%28ASCE%29IS.1943-555X.0000604}
+,
+    abstract = { Various types of Markov chain methodologies have been used in past research to develop stochastic performance models for infrastructure systems—the staged-homogeneous, nonhomogeneous, homogeneous, semi-, and hidden Markov. The primary components of a Markov model are the transition probability matrix, condition states, and duty cycle. This paper hypothesizes that the number of condition states (NCS) and length of duty cycle (LDC) significantly influence the prediction accuracy of a Markov model and that the nature of such influence varies across the different Markov methodologies. In previous studies on Markovian performance modeling, not only did this hypothesis go unanswered, but also there is a lack of comparison across the different Markov methodologies. In an attempt to shed light on this issue, this paper describes the development and comparison of performance models using these Markov methodologies and empirical data. The paper also investigates the sensitivity of Markovian model prediction accuracy to NCS and LDC. The results indicate that the semi-Markov techniques yield performance models that are generally statistically superior to those of the homogeneous and staged-homogeneous Markov (except in a few cases of NCS and LDC combinations) and that the prediction accuracy of Markovian models is very sensitive to NCS and LDC: an increase in NCS improves the prediction accuracy up to a certain NCS threshold, after which the accuracy diminishes, likely due to data overfitting. In addition, an increase in LDC generally enhances prediction accuracy when the NCS is small. The results can help guide highway agencies and researchers not only in selecting the appropriate Markovian methodology for a given NCS and LDC but also in selecting the appropriate NCS and LDC for a given Markovian methodology. }
+}
+
 @INPROCEEDINGS{js-attack,
   author={Rokicki, Thomas and Maurice, Clémentine and Laperdrix, Pierre},
   booktitle={2021 IEEE European Symposium on Security and Privacy (EuroS\&P)}, 
