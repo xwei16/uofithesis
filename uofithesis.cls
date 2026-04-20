@@ -110,7 +110,7 @@
             \gdef\@degreelevel{ Master of Science in \@department}
             \fi
             \gdef\@thesislabel{Thesis}
-            \gdef\@defaultcommitteetitle{Master's Committee:}
+            \gdef\@defaultcommitteetitle{Advisor:}
             \fi
 
             % Use custom earned degree if set, otherwise use default
