@@ -2654,10 +2654,17 @@
     sequences and their $\Delta$QoE within each specification region,
     the reachability tree provides exhaustive coverage that complements
     the targeted but incomplete coverage of adversarial attacks.
-    As neural controllers increasingly replace hand-crafted heuristics
-    in networked systems, certified environment modelling and
-    compositional reachability analysis offer a principled path toward
-    deploying these systems with formal guarantees.
+    
+    Looking ahead, the reachability tree itself could drive targeted
+    testing: action sequences with the worst $\Delta$QoE expose
+    concrete low-QoE trajectories that can be mined at scale and fed
+    back into training as hard negatives, closing the loop toward
+    verification-guided retraining of ABR controllers that are
+    verifiably safe by construction. As neural controllers
+    increasingly replace hand-crafted heuristics in networked systems,
+    certified environment modelling and compositional reachability
+    analysis offer a principled path toward deploying these systems
+    with formal guarantees.
 
 
 \printbibliography[heading=bibintoc,title={References}]
