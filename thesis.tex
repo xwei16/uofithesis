@@ -97,14 +97,14 @@
     % be no more than 350 words in length.
 
     Machine-learning-based adaptive bitrate (ABR) controllers such as
-    Pensieve~\cite{pensieve} have demonstrated substantial Quality of
+    Pensieve have demonstrated substantial Quality of
     Experience (QoE) improvements over hand-crafted heuristics, yet
     their black-box nature introduces adversarial vulnerability and
     precludes formal correctness guarantees.  This thesis addresses
     both through three contributions.
 
     We first show that Pensieve is susceptible to adversarial attack.
-    Using specifications mined by SpecTRA~\cite{spec-tra}, we
+    Using specifications mined by SpecTRA, we
     construct a PGD attack that perturbs only the most recent download
     time by at most $10\%$, reducing the selected bitrate by
     $35$--$65\%$ and degrading QoE by $30$--$40\%$ across $581$
@@ -112,16 +112,16 @@
 
     To enable formal verification of the closed-loop system, we train
     a neural environment predictor $f^{\ast}$ on real-world datasets, 
-    collected by Puffer~\cite{fugu}, and certify it via Clopper--Pearson
-    intervals~\cite{clopper-pearson}: at least $98.46\%$ of predictions
+    collected by Puffer, and certify it via Clopper--Pearson
+    intervals: at least $98.46\%$ of predictions
     incur less than $10\%$ normalised error ($90\%$ confidence).
 
     Building on $f^{\ast}$, we design the first end-to-end verification
     pipeline that alternates between a \emph{Pensieve phase}
-    (auto\_LiRPA~\cite{auto-lirpa} bound propagation with
+    (auto\_LiRPA bound propagation with
     branch-and-bound search) and an \emph{environment phase}
     ($f^{\ast}$ interval propagation).  Iterating over multiple rounds
-    builds a hierarchical reachability tree~\cite{tree} whose paths enumerate all
+    builds a hierarchical reachability tree whose paths enumerate all
     verified action sequences with associated $\Delta$QoE (per-step change in QoE) at each
     transition, with formal soundness guarantees and a statistical
     compounding bound ($p^T \geq 0.9246$ for $T = 5$).
