@@ -154,6 +154,7 @@
         \par
         \restoregeometry
     \end{titlepage}
+    \setcounter{page}{2}
 }
 
 % Abstract environment
